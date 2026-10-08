@@ -21,7 +21,7 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "com.clickorcamento.app"
+            packageName = "ClickOrcamento"
             packageVersion = "1.0.0"
         }
     }

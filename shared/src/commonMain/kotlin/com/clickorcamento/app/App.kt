@@ -1,49 +1,69 @@
 package com.clickorcamento.app
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.safeContentPadding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import org.jetbrains.compose.resources.painterResource
-
-import clickorcamento.shared.generated.resources.Res
-import clickorcamento.shared.generated.resources.compose_multiplatform
+import androidx.compose.ui.unit.dp
+import com.clickorcamento.app.core.design.ClickTheme
+import com.clickorcamento.app.data.remote.supabase
+import com.clickorcamento.app.feature.auth.LoginScreen
+import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.auth.status.SessionStatus
+import kotlinx.coroutines.launch
 
 @Composable
-@Preview
 fun App() {
-    MaterialTheme {
-        var showContent by remember { mutableStateOf(false) }
-        Column(
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.primaryContainer)
-                .safeContentPadding()
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
+    ClickTheme {
+        // sessionStatus é um StateFlow que o supabase-kt mantém
+        // atualizado. Fazendo a raiz do app reagir a ele, o login e o
+        // logout trocam de tela sozinhos — nenhuma tela precisa
+        // "navegar" manualmente depois de autenticar.
+        val sessao by supabase.auth.sessionStatus.collectAsState()
+
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
         ) {
-            Button(onClick = { showContent = !showContent }) {
-                Text("Click me!")
+            when (sessao) {
+                // Initializing: o cliente ainda está verificando se
+                // existe sessão salva. Mostrar login aqui faria a tela
+                // piscar pra quem já estava logado.
+                is SessionStatus.Initializing -> TelaCarregando()
+                is SessionStatus.Authenticated -> HomeProvisoria()
+                else -> LoginScreen()
             }
-            AnimatedVisibility(showContent) {
-                val greeting = remember { Greeting().greet() }
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Image(painterResource(Res.drawable.compose_multiplatform), null)
-                    Text("Compose: $greeting")
-                }
-            }
+        }
+    }
+}
+
+@Composable
+private fun TelaCarregando() {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        CircularProgressIndicator()
+    }
+}
+
+/** Placeholder até termos navegação e as telas de verdade. */
+@Composable
+private fun HomeProvisoria() {
+    val escopo = rememberCoroutineScope()
+    val usuario = supabase.auth.currentUserOrNull()
+
+    Column(
+        modifier = Modifier.fillMaxSize().padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("Você está dentro", style = MaterialTheme.typography.headlineSmall)
+        Text(
+            text = usuario?.email.orEmpty(),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        OutlinedButton(onClick = { escopo.launch { supabase.auth.signOut() } }) {
+            Text("Sair")
         }
     }
 }

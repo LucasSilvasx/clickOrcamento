@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.kotlinSerialization)
 }
 
 kotlin {
@@ -47,6 +48,7 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.compose.uiTooling)
+            implementation(libs.ktor.client.okhttp)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -57,12 +59,32 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+
+            // "platform(...)" marca esta dependência como uma bom: ela não
+            // traz código nenhum, só dita as versões das linhas seguintes.
+            // O "project.dependencies." na frente é necessário dentro de
+            // source sets de KMP — é um detalhe da API do Gradle, não seu erro.
+            implementation(project.dependencies.platform(libs.supabase.bom))
+
+            // Sem versão, de propósito: quem decide é a bom acima.
+            implementation(libs.supabase.auth)
+            implementation(libs.supabase.postgrest)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
+
+        jvmMain.dependencies {
+            implementation(libs.ktor.client.cio)
+        }
+
         jsMain.dependencies {
             implementation(libs.wrappers.browser)
+            implementation(libs.ktor.client.js)          // ← ACRESCENTE
+        }
+
+        wasmJsMain.dependencies {
+            implementation(libs.ktor.client.js)
         }
     }
 }
