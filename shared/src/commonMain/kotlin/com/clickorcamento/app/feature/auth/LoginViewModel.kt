@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.clickorcamento.app.data.remote.supabase
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.auth.OtpType
 import io.github.jan.supabase.auth.providers.builtin.Email
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -68,25 +69,115 @@ class LoginViewModel(
                         email = estado.email
                         password = estado.senha
                     }
-                    "Conta criada. Confirme o e-mail que enviamos e depois entre."
+                    "Enviamos um e-mail de confirmação para ${estado.email}."
                 }
             }.onSuccess { mensagem ->
                 _uiState.update {
                     it.copy(
                         carregando = false,
                         aviso = mensagem,
-                        // Volta pro modo entrar depois do cadastro
+                        // Cadastro feito: a tela passa a pedir o código do e-mail.
+                        // Voltamos o modo para ENTRAR para que, se o usuário
+                        // desistir do código, caia no login normal.
+                        aguardandoCodigo = mensagem != null,
                         modo = if (mensagem != null) ModoAuth.ENTRAR else it.modo,
-                        senha = if (mensagem != null) "" else it.senha,
+                        // A senha fica na memória durante a etapa de confirmação:
+                        // é ela que usamos no "Já confirmei, entrar". Sai em voltarParaLogin().
                         confirmacaoSenha = ""
                     )
                 }
             }.onFailure { e ->
-                _uiState.update {
-                    it.copy(carregando = false, erro = traduzirErro(e))
+                // Conta criada antes, mas nunca confirmada: em vez de só dar
+                // erro, levamos o usuário para a etapa do código e pedimos um novo.
+                if (e.message.orEmpty().contains("Email not confirmed", true)) {
+                    _uiState.update {
+                        it.copy(carregando = false, aguardandoCodigo = true, codigo = "")
+                    }
+                    reenviarCodigo()
+                } else {
+                    _uiState.update {
+                        it.copy(carregando = false, erro = traduzirErro(e))
+                    }
                 }
             }
         }
+    }
+
+    // O código é só número: filtramos o que vier (colar "123 456" também funciona).
+    fun aoMudarCodigo(valor: String) =
+        _uiState.update { it.copy(codigo = valor.filter(Char::isDigit).take(8), erro = null) }
+
+    /**
+     * Valida o código digitado. Se estiver certo, o supabase-kt cria a sessão
+     * sozinho e o `sessionStatus` do App.kt troca para a Home — esta tela
+     * não precisa navegar para lugar nenhum.
+     */
+    fun confirmarCodigo() {
+        val estado = _uiState.value
+        if (!estado.podeConfirmar) return
+
+        _uiState.update { it.copy(carregando = true, erro = null, aviso = null) }
+
+        viewModelScope.launch {
+            runCatching {
+                cliente.auth.verifyEmailOtp(
+                    type = OtpType.Email.SIGNUP,
+                    email = estado.email,
+                    token = estado.codigo
+                )
+            }.onSuccess {
+                _uiState.update { it.copy(carregando = false) }
+            }.onFailure { e ->
+                _uiState.update { it.copy(carregando = false, erro = traduzirErro(e)) }
+            }
+        }
+    }
+
+    fun reenviarCodigo() {
+        val email = _uiState.value.email
+        _uiState.update { it.copy(carregando = true, erro = null, aviso = null) }
+
+        viewModelScope.launch {
+            runCatching {
+                cliente.auth.resendEmail(OtpType.Email.SIGNUP, email)
+            }.onSuccess {
+                _uiState.update {
+                    it.copy(carregando = false, aviso = "Enviamos um novo código para $email.")
+                }
+            }.onFailure { e ->
+                _uiState.update { it.copy(carregando = false, erro = traduzirErro(e)) }
+            }
+        }
+    }
+
+    /**
+     * Caminho sem domínio/SMTP próprio: o link do e-mail confirma a conta no
+     * Supabase (mesmo que a página final dê erro), então basta entrar de novo
+     * com o e-mail e a senha que o usuário já digitou no cadastro.
+     */
+    fun entrarAposConfirmar() {
+        val estado = _uiState.value
+        if (estado.carregando || estado.senha.length < 6) return
+
+        _uiState.update { it.copy(carregando = true, erro = null, aviso = null) }
+
+        viewModelScope.launch {
+            runCatching {
+                cliente.auth.signInWith(Email) {
+                    email = estado.email
+                    password = estado.senha
+                }
+            }.onSuccess {
+                _uiState.update { it.copy(carregando = false) }
+            }.onFailure { e ->
+                _uiState.update { it.copy(carregando = false, erro = traduzirErro(e)) }
+            }
+        }
+    }
+
+    /** Desiste da etapa de confirmação e volta para o formulário de login. */
+    fun voltarParaLogin() = _uiState.update {
+        it.copy(aguardandoCodigo = false, codigo = "", senha = "", erro = null, aviso = null)
     }
 
     /**
@@ -105,8 +196,11 @@ class LoginViewModel(
                 "Já existe uma conta com esse e-mail."
             original.contains("weak", true) || original.contains("password", true) ->
                 "Senha muito fraca. Use pelo menos 6 caracteres."
-            original.contains("rate limit", true) ->
-                "Muitas tentativas. Aguarde um pouco."
+            original.contains("rate limit", true) ||
+                original.contains("only request this after", true) ->
+                "Muitas tentativas. Aguarde cerca de um minuto."
+            original.contains("expired", true) || original.contains("invalid", true) ->
+                "Código inválido ou expirado. Confira os dígitos ou peça um novo."
             else -> "Não foi possível conectar. $original"
         }
     }

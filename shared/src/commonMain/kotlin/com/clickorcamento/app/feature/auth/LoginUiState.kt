@@ -17,7 +17,13 @@ data class LoginUiState(
     val carregando: Boolean = false,
     val erro: String? = null,
     /** Mensagem de sucesso do cadastro (pedindo confirmação por e-mail) */
-    val aviso: String? = null
+    val aviso: String? = null,
+    /**
+     * Segunda etapa do cadastro: o Supabase mandou um código por e-mail
+     * e a tela passa a pedir esse código em vez do formulário normal.
+     */
+    val aguardandoCodigo: Boolean = false,
+    val codigo: String = ""
 ) {
     // Validação mora aqui, não na tela. A tela só lê o resultado.
     private val emailValido: Boolean
@@ -32,6 +38,10 @@ data class LoginUiState(
     /** Regra do botão principal. Fica aqui pra não duplicar na UI. */
     val podeEnviar: Boolean
         get() = !carregando && emailValido && senhaValida && confirmacaoValida
+
+    /** O código do Supabase tem de 6 a 8 dígitos, conforme a configuração do projeto. */
+    val podeConfirmar: Boolean
+        get() = !carregando && codigo.length >= 6
 
     val textoBotao: String
         get() = if (modo == ModoAuth.ENTRAR) "Entrar" else "Criar conta"

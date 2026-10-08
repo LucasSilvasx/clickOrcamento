@@ -37,15 +37,138 @@ fun LoginScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LoginConteudo(
-        state = state,
-        onEmail = viewModel::aoMudarEmail,
-        onSenha = viewModel::aoMudarSenha,
-        onConfirmacao = viewModel::aoMudarConfirmacao,
-        onAlternarVisibilidade = viewModel::alternarVisibilidadeSenha,
-        onAlternarModo = viewModel::alternarModo,
-        onEnviar = viewModel::enviar
-    )
+    // Depois do cadastro a tela vira a "etapa do código", sem navegação:
+    // é só outro estado da mesma tela.
+    if (state.aguardandoCodigo) {
+        CodigoConteudo(
+            state = state,
+            onCodigo = viewModel::aoMudarCodigo,
+            onConfirmar = viewModel::confirmarCodigo,
+            onEntrar = viewModel::entrarAposConfirmar,
+            onReenviar = viewModel::reenviarCodigo,
+            onVoltar = viewModel::voltarParaLogin
+        )
+    } else {
+        LoginConteudo(
+            state = state,
+            onEmail = viewModel::aoMudarEmail,
+            onSenha = viewModel::aoMudarSenha,
+            onConfirmacao = viewModel::aoMudarConfirmacao,
+            onAlternarVisibilidade = viewModel::alternarVisibilidadeSenha,
+            onAlternarModo = viewModel::alternarModo,
+            onEnviar = viewModel::enviar
+        )
+    }
+}
+
+/** Etapa 2 do cadastro: digitar o código que chegou por e-mail. */
+@Composable
+private fun CodigoConteudo(
+    state: LoginUiState,
+    onCodigo: (String) -> Unit,
+    onConfirmar: () -> Unit,
+    onEntrar: () -> Unit,
+    onReenviar: () -> Unit,
+    onVoltar: () -> Unit
+) {
+    val temaEscuro = LocalTemaEscuro.current
+    val alternarTema = LocalAlternarTema.current
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        TextButton(
+            onClick = alternarTema,
+            modifier = Modifier.align(Alignment.TopEnd).padding(12.dp)
+        ) {
+            Text(if (temaEscuro) "Tema claro" else "Tema escuro")
+        }
+
+        Column(
+            modifier = Modifier
+                .align(Alignment.Center)
+                .widthIn(max = 400.dp)
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Marca()
+
+            Spacer(Modifier.height(28.dp))
+
+            Text("Confirme seu e-mail", style = MaterialTheme.typography.titleLarge)
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = "Abra o e-mail que enviamos para ${state.email} e clique no link de " +
+                    "confirmação. Pode aparecer uma página de erro no navegador (localhost): " +
+                    "é normal, a conta já fica confirmada. Depois volte aqui.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(Modifier.height(20.dp))
+
+            Button(
+                onClick = onEntrar,
+                enabled = !state.carregando,
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth().height(50.dp)
+            ) {
+                if (state.carregando) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                } else {
+                    Text("Já confirmei, entrar", style = MaterialTheme.typography.labelLarge)
+                }
+            }
+
+            Spacer(Modifier.height(24.dp))
+
+            // Alternativa: só funciona se o e-mail trouxer um código de verdade
+            // (depende do template do Supabase). Fica discreta de propósito.
+            OutlinedTextField(
+                value = state.codigo,
+                onValueChange = onCodigo,
+                label = { Text("Código do e-mail (se houver)") },
+                singleLine = true,
+                enabled = !state.carregando,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Done
+                ),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            )
+            TextButton(onClick = onConfirmar, enabled = state.podeConfirmar) {
+                Text("Confirmar código", style = MaterialTheme.typography.bodyMedium)
+            }
+
+            Mensagem(
+                texto = state.erro,
+                fundo = MaterialTheme.colorScheme.errorContainer,
+                cor = MaterialTheme.colorScheme.onErrorContainer
+            )
+            Mensagem(
+                texto = state.aviso,
+                fundo = MaterialTheme.colorScheme.primaryContainer,
+                cor = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+
+            Spacer(Modifier.height(16.dp))
+
+            TextButton(onClick = onReenviar, enabled = !state.carregando) {
+                Text("Reenviar código", style = MaterialTheme.typography.bodyMedium)
+            }
+            TextButton(onClick = onVoltar, enabled = !state.carregando) {
+                Text("Voltar para o login", style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+    }
 }
 
 @Composable
