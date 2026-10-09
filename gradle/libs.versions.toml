@@ -22,6 +22,11 @@ koin = "4.2.2"
 # 2.10.0-rc01 é a mais recente publicada e depende do lifecycle 2.11.0,
 # o mesmo que já usamos. Trocar por 2.10.0 estável quando sair.
 navigation-compose = "2.10.0-rc01"
+# Ícones Material (Icons.Outlined.*). A JetBrains parou esse artefato na 1.7.3
+# e ele NÃO acompanha a versão do Compose (1.12.0): são só dados (ImageVector),
+# então funciona com o Compose atual. Se um dia o ícone que você precisa não
+# existir aqui, desenhe um ImageVector à mão em core/design/.
+material-icons = "1.7.3"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -39,6 +44,7 @@ compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.re
 compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "composeMultiplatform" }
 compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3" }
 compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "composeMultiplatform" }
+compose-materialIconsExtended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "material-icons" }
 compose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "composeMultiplatform" }
 compose-uiToolingPreview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "composeMultiplatform" }
 kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
