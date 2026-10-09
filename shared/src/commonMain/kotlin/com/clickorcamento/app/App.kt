@@ -9,10 +9,10 @@ import androidx.compose.ui.unit.dp
 import com.clickorcamento.app.core.design.ClickTheme
 import com.clickorcamento.app.di.appModule
 import com.clickorcamento.app.feature.auth.LoginScreen
+import com.clickorcamento.app.navigation.ClickNavHost
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.status.SessionStatus
-import kotlinx.coroutines.launch
 import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
 import org.koin.dsl.koinConfiguration
@@ -45,7 +45,7 @@ fun App() {
                     // existe sessão salva. Mostrar login aqui faria a tela
                     // piscar pra quem já estava logado.
                     is SessionStatus.Initializing -> TelaCarregando()
-                    is SessionStatus.Authenticated -> HomeProvisoria()
+                    is SessionStatus.Authenticated -> ClickNavHost()
                     else -> LoginScreen()
                 }
             }
@@ -57,29 +57,5 @@ fun App() {
 private fun TelaCarregando() {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         CircularProgressIndicator()
-    }
-}
-
-/** Placeholder até termos navegação e as telas de verdade. */
-@Composable
-private fun HomeProvisoria() {
-    val supabase = koinInject<SupabaseClient>()
-    val escopo = rememberCoroutineScope()
-    val usuario = supabase.auth.currentUserOrNull()
-
-    Column(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text("Você está dentro", style = MaterialTheme.typography.headlineSmall)
-        Text(
-            text = usuario?.email.orEmpty(),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        OutlinedButton(onClick = { escopo.launch { supabase.auth.signOut() } }) {
-            Text("Sair")
-        }
     }
 }
