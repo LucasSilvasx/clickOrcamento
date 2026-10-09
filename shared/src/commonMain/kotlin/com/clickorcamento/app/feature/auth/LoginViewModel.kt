@@ -2,7 +2,6 @@ package com.clickorcamento.app.feature.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.clickorcamento.app.data.remote.supabase
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.OtpType
@@ -14,12 +13,11 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
- * O cliente vem por parâmetro, com valor padrão apontando para a
- * instância global. Quando o Koin entrar, o padrão sai e a injeção
- * passa a ser explícita — e aí dá pra testar com um cliente falso.
+ * O cliente é injetado pelo Koin (ver di/AppModule.kt). Como ele chega
+ * pelo construtor, dá pra testar este ViewModel com um cliente falso.
  */
 class LoginViewModel(
-    private val cliente: SupabaseClient = supabase
+    private val cliente: SupabaseClient
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())

@@ -19,9 +19,9 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.clickorcamento.app.core.design.LocalAlternarTema
 import com.clickorcamento.app.core.design.LocalTemaEscuro
+import org.koin.compose.viewmodel.koinViewModel
 
 /**
  * Padrão de duas camadas:
@@ -33,7 +33,7 @@ import com.clickorcamento.app.core.design.LocalTemaEscuro
  */
 @Composable
 fun LoginScreen(
-    viewModel: LoginViewModel = viewModel { LoginViewModel() }
+    viewModel: LoginViewModel = koinViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 

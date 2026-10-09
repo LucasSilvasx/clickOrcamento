@@ -18,6 +18,9 @@ import io.github.jan.supabase.postgrest.Postgrest
  *
  * Nada de Storage ou Realtime por enquanto — cada módulo instalado
  * é peso a mais no bundle do navegador.
+ *
+ * Quem decide quando criar (e garante que seja uma instância só) é o
+ * Koin, em di/AppModule.kt.
  */
 fun criarSupabaseClient(): SupabaseClient = createSupabaseClient(
     supabaseUrl = SupabaseConfig.URL,
@@ -26,12 +29,3 @@ fun criarSupabaseClient(): SupabaseClient = createSupabaseClient(
     install(Auth)
     install(Postgrest)
 }
-
-/**
- * Instância única. "by lazy" cria só na primeira vez que alguém usa.
- *
- * Isso é temporário: quando entrar o Koin, essa variável global sai e
- * o cliente passa a ser injetado. Estou deixando assim agora pra não
- * misturar dois assuntos novos no mesmo passo.
- */
-val supabase: SupabaseClient by lazy { criarSupabaseClient() }

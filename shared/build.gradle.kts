@@ -69,6 +69,12 @@ kotlin {
             // Sem versão, de propósito: quem decide é a bom acima.
             implementation(libs.supabase.auth)
             implementation(libs.supabase.postgrest)
+
+            // Koin: mesma lógica da bom do Supabase, versão decidida em um lugar só.
+            implementation(project.dependencies.platform(libs.koin.bom))
+            implementation(libs.koin.core)
+            implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
