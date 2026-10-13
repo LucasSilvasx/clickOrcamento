@@ -1,23 +1,22 @@
 package com.clickorcamento.app.navigation
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
+import com.clickorcamento.app.feature.cliente.ClientesScreen
 import com.clickorcamento.app.feature.configuracoes.ConfiguracoesScreen
+import com.clickorcamento.app.feature.orcamento.editor.EditorOrcamentoScreen
+import com.clickorcamento.app.feature.orcamento.lista.OrcamentosScreen
 import org.koin.compose.koinInject
 
 /**
@@ -28,6 +27,10 @@ import org.koin.compose.koinInject
  * `sessionStatus` no App.kt — este NavHost só existe depois de autenticar.
  *
  * A `CascaApp` desenha as abas/barra inferior em volta do NavHost.
+ *
+ * A área Orçamentos é um grafo aninhado (`navigation<RotaOrcamentos>`): a lista
+ * é o início e o editor fica "dentro" dela. Assim a aba Orçamentos segue marcada
+ * com o editor aberto e o "voltar" do editor cai na lista.
  */
 @Composable
 fun ClickNavHost() {
@@ -40,17 +43,43 @@ fun ClickNavHost() {
     val supabase = koinInject<SupabaseClient>()
     val iniciais = iniciaisDoEmail(supabase.auth.currentUserOrNull()?.email)
 
+    // O editor é uma tela "cheia": no celular a casca esconde as barras e ele desenha as suas.
+    val telaCheia = entradaAtual?.destination?.hasRoute(RotaEditorOrcamento::class) == true
+
     CascaApp(
         destinoAtual = entradaAtual?.destination,
         iniciais = iniciais,
+        telaCheia = telaCheia,
         aoSelecionar = { navController.irParaArea(it) }
     ) {
         NavHost(
             navController = navController,
             startDestination = RotaOrcamentos // área inicial, conforme UI-UX.md
         ) {
-            composable<RotaOrcamentos> { TelaVazia("Orçamentos") }
-            composable<RotaClientes> { TelaVazia("Clientes") }
+            navigation<RotaOrcamentos>(startDestination = RotaListaOrcamentos) {
+                composable<RotaListaOrcamentos> {
+                    OrcamentosScreen(
+                        aoNovo = { navController.navigate(RotaEditorOrcamento()) },
+                        aoAbrir = { id -> navController.navigate(RotaEditorOrcamento(id)) }
+                    )
+                }
+                composable<RotaEditorOrcamento> { entrada ->
+                    // toRoute devolve a rota com o argumento já tipado (orcamentoId).
+                    val rota = entrada.toRoute<RotaEditorOrcamento>()
+                    EditorOrcamentoScreen(
+                        orcamentoId = rota.orcamentoId,
+                        aoVoltar = { navController.popBackStack() },
+                        aoIrParaConfiguracoes = {
+                            navController.irParaArea(destinos.first { it.rota == RotaConfiguracoes })
+                        }
+                    )
+                }
+            }
+            composable<RotaClientes> {
+                ClientesScreen(
+                    aoAbrirOrcamento = { id -> navController.navigate(RotaEditorOrcamento(id)) }
+                )
+            }
             composable<RotaConfiguracoes> { ConfiguracoesScreen() }
         }
     }
@@ -75,28 +104,26 @@ private fun iniciaisDoEmail(email: String?): String =
  * - launchSingleTop: tocar na aba atual não cria cópia dela;
  * - restoreState: voltar para uma aba restaura o que o usuário deixou nela.
  * Assim o "voltar" do Android sai do app em vez de percorrer todas as abas.
+ *
+ * Tocar na aba da área onde o usuário JÁ está não restaura nada (restoreState
+ * traria o editor de volta): em Orçamentos, leva de volta à lista.
  */
 private fun NavController.irParaArea(destino: Destino) {
+    val jaNaArea = currentDestination?.hierarchy?.any { it.hasRoute(destino.classe) } == true
+    if (jaNaArea) {
+        if (destino.rota == RotaOrcamentos) {
+            val voltou = popBackStack(RotaListaOrcamentos, inclusive = false)
+            // Veio de outra aba direto para o editor: a lista não está na pilha, então abre ela no lugar.
+            if (!voltou) {
+                navigate(RotaListaOrcamentos) { popUpTo(RotaOrcamentos) { inclusive = true } }
+            }
+        }
+        return
+    }
+
     navigate(destino.rota) {
         popUpTo(RotaOrcamentos) { saveState = true }
         launchSingleTop = true
         restoreState = true
-    }
-}
-
-/** Tela vazia reaproveitada pelas áreas que ainda não existem. */
-@Composable
-private fun TelaVazia(titulo: String) {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(titulo, style = MaterialTheme.typography.headlineSmall)
-        Text(
-            text = "Em construção",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
     }
 }

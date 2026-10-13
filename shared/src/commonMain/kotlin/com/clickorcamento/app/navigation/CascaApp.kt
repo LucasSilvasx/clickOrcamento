@@ -43,11 +43,9 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
+import com.clickorcamento.app.core.design.LarguraMinimaDesktop
 import com.clickorcamento.app.core.design.LocalAlternarTema
 import com.clickorcamento.app.core.design.LocalTemaEscuro
-
-/** Abaixo disso o app usa o layout de celular (docs/UI-UX.md, seção 6). */
-private val LarguraMinimaDesktop = 600.dp
 
 /**
  * Moldura do app logado: escolhe o layout pela largura disponível e
@@ -61,6 +59,11 @@ private val LarguraMinimaDesktop = 600.dp
  *   padding 24.dp. A largura máxima do conteúdo (~1000.dp no editor) fica
  *   a cargo de cada tela, porque Clientes e Configurações usam a largura toda.
  *
+ * [telaCheia] (só afeta o celular): a tela atual é de edição e desenha as próprias
+ * barras (seta de voltar e ações fixas), então a casca esconde a barra de título e a
+ * inferior e não põe padding. A tela cheia precisa tratar sozinha as barras do sistema.
+ * No desktop as abas continuam aparecendo.
+ *
  * Analogia com o Android puro: é o `Scaffold` que você já conhece, só que
  * ele troca de "roupa" conforme o tamanho da janela, em vez de ter um
  * layout-sw600dp separado.
@@ -69,12 +72,13 @@ private val LarguraMinimaDesktop = 600.dp
 fun CascaApp(
     destinoAtual: NavDestination?,
     iniciais: String,
+    telaCheia: Boolean,
     aoSelecionar: (Destino) -> Unit,
     conteudo: @Composable () -> Unit
 ) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
         if (maxWidth < LarguraMinimaDesktop) {
-            CascaCelular(destinoAtual, aoSelecionar, conteudo)
+            CascaCelular(destinoAtual, telaCheia, aoSelecionar, conteudo)
         } else {
             CascaDesktop(destinoAtual, iniciais, aoSelecionar, conteudo)
         }
@@ -86,9 +90,17 @@ fun CascaApp(
 @Composable
 private fun CascaCelular(
     destinoAtual: NavDestination?,
+    telaCheia: Boolean,
     aoSelecionar: (Destino) -> Unit,
     conteudo: @Composable () -> Unit
 ) {
+    if (telaCheia) {
+        Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+            conteudo()
+        }
+        return
+    }
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
