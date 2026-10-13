@@ -1,8 +1,13 @@
 package com.clickorcamento.app.di
 
 import com.clickorcamento.app.data.remote.criarSupabaseClient
+import com.clickorcamento.app.data.repository.PrestadorRepositorySupabase
+import com.clickorcamento.app.domain.repository.PrestadorRepository
 import com.clickorcamento.app.feature.auth.LoginViewModel
+import com.clickorcamento.app.feature.configuracoes.ConfiguracoesViewModel
+import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
+import org.koin.dsl.bind
 import org.koin.dsl.module
 
 /**
@@ -24,5 +29,11 @@ import org.koin.dsl.module
 val appModule = module {
     single { criarSupabaseClient() }
 
+    // `bind` registra a implementação sob o nome da interface: quem pede
+    // PrestadorRepository recebe a versão Supabase (e um teste poderia
+    // trocar por uma falsa sem mexer no ViewModel).
+    singleOf(::PrestadorRepositorySupabase) bind PrestadorRepository::class
+
     viewModelOf(::LoginViewModel)
+    viewModelOf(::ConfiguracoesViewModel)
 }

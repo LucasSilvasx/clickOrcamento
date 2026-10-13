@@ -4,11 +4,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -19,7 +17,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
-import kotlinx.coroutines.launch
+import com.clickorcamento.app.feature.configuracoes.ConfiguracoesScreen
 import org.koin.compose.koinInject
 
 /**
@@ -53,7 +51,7 @@ fun ClickNavHost() {
         ) {
             composable<RotaOrcamentos> { TelaVazia("Orçamentos") }
             composable<RotaClientes> { TelaVazia("Clientes") }
-            composable<RotaConfiguracoes> { ConfiguracoesProvisoria() }
+            composable<RotaConfiguracoes> { ConfiguracoesScreen() }
         }
     }
 }
@@ -100,33 +98,5 @@ private fun TelaVazia(titulo: String) {
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-    }
-}
-
-/**
- * Placeholder de Configurações. Por enquanto só guarda a conta + "Sair"
- * (que antes ficava na home), porque o logout pertence a esta área segundo
- * o docs/UI-UX.md. Vira a tela real no passo 5.
- */
-@Composable
-private fun ConfiguracoesProvisoria() {
-    val supabase = koinInject<SupabaseClient>()
-    val escopo = rememberCoroutineScope()
-    val usuario = supabase.auth.currentUserOrNull()
-
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text("Configurações", style = MaterialTheme.typography.headlineSmall)
-        Text(
-            text = usuario?.email.orEmpty(),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        OutlinedButton(onClick = { escopo.launch { supabase.auth.signOut() } }) {
-            Text("Sair")
-        }
     }
 }
