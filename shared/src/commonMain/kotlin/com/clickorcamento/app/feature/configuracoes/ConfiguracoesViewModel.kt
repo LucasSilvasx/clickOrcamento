@@ -2,6 +2,7 @@ package com.clickorcamento.app.feature.configuracoes
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.clickorcamento.app.domain.model.Prestador
 import com.clickorcamento.app.domain.repository.PrestadorRepository
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
@@ -40,10 +41,122 @@ class ConfiguracoesViewModel(
                     _uiState.update { it.copy(carregando = false, empresas = lista) }
                 }
                 .onFailure { e ->
-                    _uiState.update { it.copy(carregando = false, erro = traduzirErro(e)) }
+                    _uiState.update { it.copy(carregando = false, erro = traduzirErroCarga(e)) }
                 }
         }
     }
+
+    // ───────────────────────────── Formulário ─────────────────────────────
+
+    fun novaEmpresa() {
+        _uiState.update { it.copy(formulario = FormularioEmpresa(), aviso = null, erroAcao = null) }
+    }
+
+    fun editarEmpresa(empresa: Prestador) {
+        _uiState.update {
+            it.copy(formulario = FormularioEmpresa.de(empresa), aviso = null, erroAcao = null)
+        }
+    }
+
+    /**
+     * A tela devolve o formulário inteiro já com o campo trocado
+     * (`form.copy(apelido = ...)`): evita uma função por campo. Ignora se o
+     * formulário já fechou ou está salvando (campos desabilitados).
+     */
+    fun aoMudarFormulario(novo: FormularioEmpresa) {
+        _uiState.update {
+            if (it.formulario == null || it.formulario.salvando) it else it.copy(formulario = novo)
+        }
+    }
+
+    fun fecharFormulario() {
+        _uiState.update { if (it.formulario?.salvando == true) it else it.copy(formulario = null) }
+    }
+
+    fun salvarFormulario() {
+        val form = _uiState.value.formulario ?: return
+        if (!form.podeSalvar) return
+
+        // A primeira empresa do usuário nasce como padrão (o editor depende dela).
+        val primeira = _uiState.value.empresas.isEmpty()
+
+        _uiState.update { it.copy(formulario = form.copy(salvando = true, erro = null)) }
+
+        viewModelScope.launch {
+            runCatching {
+                if (form.id == null) {
+                    prestadores.criar(form.paraDados(), padrao = primeira)
+                } else {
+                    prestadores.atualizar(form.id, form.paraDados())
+                }
+            }.onSuccess {
+                // Fecha o formulário e relê a lista: o banco é a fonte da verdade.
+                _uiState.update { it.copy(formulario = null, aviso = "Empresa salva") }
+                carregar()
+            }.onFailure { e ->
+                // O formulário continua aberto e preenchido (UI-UX: nunca perder dado digitado).
+                _uiState.update {
+                    it.copy(formulario = form.copy(salvando = false, erro = traduzirErroSalvar(e)))
+                }
+            }
+        }
+    }
+
+    // ─────────────────────── Padrão e exclusão ───────────────────────
+
+    fun definirComoPadrao(empresa: Prestador) {
+        if (empresa.padrao) return
+        executarAcao("${empresa.apelido} agora é a empresa padrão") {
+            prestadores.definirPadrao(empresa.id)
+        }
+    }
+
+    fun pedirExclusao(empresa: Prestador) {
+        // Regra de negócio: sem padrão o orçamento novo não sabe qual empresa usar.
+        if (empresa.padrao && _uiState.value.empresas.size > 1) {
+            _uiState.update {
+                it.copy(
+                    aviso = null,
+                    erroAcao = "Defina outra empresa como padrão antes de excluir " +
+                        "\"${empresa.apelido}\"."
+                )
+            }
+            return
+        }
+        _uiState.update { it.copy(empresaParaExcluir = empresa, aviso = null, erroAcao = null) }
+    }
+
+    fun cancelarExclusao() {
+        _uiState.update { it.copy(empresaParaExcluir = null) }
+    }
+
+    fun confirmarExclusao() {
+        val alvo = _uiState.value.empresaParaExcluir ?: return
+        _uiState.update { it.copy(empresaParaExcluir = null) }
+        executarAcao("Empresa excluída") { prestadores.excluir(alvo.id) }
+    }
+
+    /**
+     * Roda uma ação do repository com a tela "ocupada" e recarrega a lista no
+     * fim, dando certo ou não (se `definirPadrao` falhar no meio, a lista
+     * recarregada mostra o estado real do banco).
+     */
+    private fun executarAcao(avisoSucesso: String, acao: suspend () -> Unit) {
+        _uiState.update { it.copy(ocupado = true, erroAcao = null, aviso = null) }
+
+        viewModelScope.launch {
+            runCatching { acao() }
+                .onSuccess {
+                    _uiState.update { it.copy(ocupado = false, aviso = avisoSucesso) }
+                }
+                .onFailure { e ->
+                    _uiState.update { it.copy(ocupado = false, erroAcao = traduzirErroAcao(e)) }
+                }
+            carregar()
+        }
+    }
+
+    // ───────────────────────────── Conta ─────────────────────────────
 
     /**
      * Encerra a sessão. Não navegamos para lugar nenhum: o `sessionStatus`
@@ -57,9 +170,26 @@ class ConfiguracoesViewModel(
         }
     }
 
-    private fun traduzirErro(e: Throwable): String {
+    // ───────────────────────────── Erros ─────────────────────────────
+
+    private fun traduzirErroCarga(e: Throwable): String {
         val original = e.message.orEmpty()
         return "Não foi possível carregar suas empresas. Verifique a conexão " +
             "(se o projeto ficou parado, o Supabase pode estar pausado). $original"
+    }
+
+    private fun traduzirErroSalvar(e: Throwable): String =
+        "Não foi possível salvar a empresa. Verifique a conexão e tente de novo. " +
+            e.message.orEmpty()
+
+    private fun traduzirErroAcao(e: Throwable): String {
+        val original = e.message.orEmpty()
+        // 23503 = foreign_key_violation do Postgres: o orcamento aponta para
+        // esta empresa com ON DELETE RESTRICT.
+        return if (original.contains("23503") || original.contains("foreign key", ignoreCase = true)) {
+            "Esta empresa tem orçamentos e não pode ser excluída."
+        } else {
+            "Não foi possível concluir a ação. Verifique a conexão e tente de novo. $original"
+        }
     }
 }
