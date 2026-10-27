@@ -264,8 +264,7 @@ class EditorOrcamentoViewModel(
                     val criado = orcamentos.criar(dados)
                     criado.id to criado.numero
                 } else {
-                    orcamentos.atualizar(idAtual, dados)
-                    idAtual to estado.numero
+                    idAtual to orcamentos.atualizar(idAtual, dados)
                 }
             }.getOrElse { e ->
                 // Tudo que o usuário digitou continua na tela (UI-UX, princípio 5).

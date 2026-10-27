@@ -62,11 +62,17 @@ class OrcamentoRepositorySupabase(
         return OrcamentoCriado(id = criado.id, numero = criado.numero)
     }
 
-    override suspend fun atualizar(id: String, dados: DadosOrcamento) {
-        supabase.from("orcamento").update(dados.paraJson()) {
-            filter { eq("id", id) }
-        }
+    override suspend fun atualizar(id: String, dados: DadosOrcamento): Int {
+        // `select()` devolve a linha já gravada: se a empresa mudou, o trigger
+        // trocou o número e é este novo que a tela (e o PDF) precisam usar.
+        val atualizado = supabase.from("orcamento")
+            .update(dados.paraJson()) {
+                select()
+                filter { eq("id", id) }
+            }
+            .decodeSingle<OrcamentoDto>()
         gravarItens(id, dados.itens)
+        return atualizado.numero
     }
 
     override suspend fun duplicar(id: String): OrcamentoCriado {
