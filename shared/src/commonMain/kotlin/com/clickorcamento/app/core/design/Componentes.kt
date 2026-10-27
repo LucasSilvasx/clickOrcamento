@@ -32,11 +32,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.clickorcamento.app.core.format.limparCpfCnpj
+import com.clickorcamento.app.core.format.limparTelefone
 
 /**
  * Componentes visuais reutilizados por Clientes, Orçamentos e Editor
@@ -108,11 +111,13 @@ fun CampoTexto(
     ultimo: Boolean = false,
     alinharADireita: Boolean = false,
     prefixo: String? = null,
-    erro: Boolean = false
+    erro: Boolean = false,
+    transformacao: VisualTransformation = VisualTransformation.None
 ) {
     OutlinedTextField(
         value = valor,
         onValueChange = aoMudar,
+        visualTransformation = transformacao,
         label = { Text(rotulo, maxLines = 1, overflow = TextOverflow.Ellipsis) },
         supportingText = dica?.let { { Text(it) } },
         prefix = prefixo?.let { { Text(it) } },
@@ -130,6 +135,54 @@ fun CampoTexto(
         ),
         shape = RoundedCornerShape(12.dp),
         modifier = modifier
+    )
+}
+
+/**
+ * CPF ou CNPJ com máscara. O valor que entra e sai é só o miolo (sem pontuação,
+ * ex.: "12345678000190"); a pontuação é desenhada pelo [MascaraCpfCnpj].
+ * Aceita letras por causa do CNPJ alfanumérico.
+ */
+@Composable
+fun CampoCpfCnpj(
+    valor: String,
+    aoMudar: (String) -> Unit,
+    modifier: Modifier = Modifier.fillMaxWidth(),
+    rotulo: String = "CPF ou CNPJ",
+    habilitado: Boolean = true,
+    ultimo: Boolean = false
+) {
+    CampoTexto(
+        // limpar aqui também protege contra valor antigo salvo com pontuação.
+        valor = limparCpfCnpj(valor),
+        rotulo = rotulo,
+        aoMudar = { aoMudar(limparCpfCnpj(it)) },
+        modifier = modifier,
+        habilitado = habilitado,
+        ultimo = ultimo,
+        transformacao = MascaraCpfCnpj
+    )
+}
+
+/** Telefone com máscara (fixo ou celular). Mesmo esquema: entra e sai só dígitos. */
+@Composable
+fun CampoTelefone(
+    valor: String,
+    aoMudar: (String) -> Unit,
+    modifier: Modifier = Modifier.fillMaxWidth(),
+    rotulo: String = "Telefone",
+    habilitado: Boolean = true,
+    ultimo: Boolean = false
+) {
+    CampoTexto(
+        valor = limparTelefone(valor),
+        rotulo = rotulo,
+        aoMudar = { aoMudar(limparTelefone(it)) },
+        modifier = modifier,
+        habilitado = habilitado,
+        teclado = KeyboardType.Phone,
+        ultimo = ultimo,
+        transformacao = MascaraTelefone
     )
 }
 

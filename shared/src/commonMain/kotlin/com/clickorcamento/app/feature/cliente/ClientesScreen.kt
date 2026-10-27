@@ -51,6 +51,8 @@ import com.clickorcamento.app.core.design.Carregando
 import com.clickorcamento.app.core.design.ConviteVazio
 import com.clickorcamento.app.core.design.ErroComRetentativa
 import com.clickorcamento.app.core.design.LarguraMinimaDesktop
+import com.clickorcamento.app.core.format.formatarCpfCnpj
+import com.clickorcamento.app.core.format.formatarTelefone
 import com.clickorcamento.app.core.format.iniciaisDe
 import com.clickorcamento.app.domain.model.Cliente
 import org.koin.compose.viewmodel.koinViewModel
@@ -305,7 +307,8 @@ private fun LinhaCliente(
 ) {
     val cores = MaterialTheme.colorScheme
     // "CNPJ · telefone", ignorando o que estiver em branco.
-    val detalhe = listOf(cliente.cnpj, cliente.telefone).filter { it.isNotBlank() }.joinToString(" · ")
+    val detalhe = listOf(formatarCpfCnpj(cliente.cnpj), formatarTelefone(cliente.telefone))
+        .filter { it.isNotBlank() }.joinToString(" · ")
 
     Row(
         modifier = Modifier

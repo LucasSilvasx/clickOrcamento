@@ -1,5 +1,7 @@
 package com.clickorcamento.app.feature.cliente
 
+import com.clickorcamento.app.core.format.limparCpfCnpj
+import com.clickorcamento.app.core.format.limparTelefone
 import com.clickorcamento.app.domain.model.Cliente
 import com.clickorcamento.app.domain.model.DadosCliente
 
@@ -13,7 +15,7 @@ data class FormularioCliente(
     val id: String? = null,
     val razaoSocial: String = "",
     val cnpj: String = "",
-    val contato: String = "",
+    val inscricaoEstadual: String = "",
     val endereco: String = "",
     val telefone: String = "",
     val email: String = "",
@@ -35,7 +37,7 @@ data class FormularioCliente(
         razaoSocial = razaoSocial.trim(),
         cnpj = cnpj.trim(),
         endereco = endereco.trim(),
-        contato = contato.trim(),
+        inscricaoEstadual = inscricaoEstadual.trim(),
         telefone = telefone.trim(),
         email = email.trim()
     )
@@ -44,10 +46,11 @@ data class FormularioCliente(
         fun de(cliente: Cliente) = FormularioCliente(
             id = cliente.id,
             razaoSocial = cliente.razaoSocial,
-            cnpj = cliente.cnpj,
-            contato = cliente.contato,
+            // Só o miolo (sem pontuação): a máscara do campo desenha o resto.
+            cnpj = limparCpfCnpj(cliente.cnpj),
+            inscricaoEstadual = cliente.inscricaoEstadual,
             endereco = cliente.endereco,
-            telefone = cliente.telefone,
+            telefone = limparTelefone(cliente.telefone),
             email = cliente.email
         )
     }

@@ -15,7 +15,7 @@ data class ClienteDto(
     @SerialName("razao_social") val razaoSocial: String = "",
     val cnpj: String = "",
     val endereco: String = "",
-    val contato: String = "",
+    @SerialName("inscricao_estadual") val inscricaoEstadual: String = "",
     val telefone: String = "",
     val email: String = ""
 ) {
@@ -24,7 +24,7 @@ data class ClienteDto(
         razaoSocial = razaoSocial,
         cnpj = cnpj,
         endereco = endereco,
-        contato = contato,
+        inscricaoEstadual = inscricaoEstadual,
         telefone = telefone,
         email = email
     )
@@ -38,7 +38,7 @@ fun DadosCliente.paraJson(): JsonObject = buildJsonObject {
     put("razao_social", razaoSocial)
     put("cnpj", cnpj)
     put("endereco", endereco)
-    put("contato", contato)
+    put("inscricao_estadual", inscricaoEstadual)
     put("telefone", telefone)
     put("email", email)
 }

@@ -1,5 +1,7 @@
 package com.clickorcamento.app.feature.configuracoes
 
+import com.clickorcamento.app.core.format.limparCpfCnpj
+import com.clickorcamento.app.core.format.limparTelefone
 import com.clickorcamento.app.domain.model.DadosPrestador
 import com.clickorcamento.app.domain.model.Prestador
 
@@ -51,9 +53,10 @@ data class FormularioEmpresa(
             id = empresa.id,
             apelido = empresa.apelido,
             nomeRazaoSocial = empresa.nomeRazaoSocial,
-            cpfCnpj = empresa.cpfCnpj.orEmpty(),
+            // Só o miolo (sem pontuação): a máscara do campo desenha o resto.
+            cpfCnpj = limparCpfCnpj(empresa.cpfCnpj.orEmpty()),
             endereco = empresa.endereco.orEmpty(),
-            telefone = empresa.telefone.orEmpty(),
+            telefone = limparTelefone(empresa.telefone.orEmpty()),
             email = empresa.email.orEmpty(),
             formaPagamento = empresa.formaPagamentoPadrao.orEmpty(),
             prazoPagamento = empresa.prazoPagamentoPadrao.orEmpty(),

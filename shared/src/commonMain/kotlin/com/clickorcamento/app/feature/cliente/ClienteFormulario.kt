@@ -34,6 +34,8 @@ import androidx.compose.ui.unit.dp
 import com.clickorcamento.app.core.design.Avatar
 import com.clickorcamento.app.core.design.Badge
 import com.clickorcamento.app.core.design.CaixaMensagemAnimada
+import com.clickorcamento.app.core.design.CampoCpfCnpj
+import com.clickorcamento.app.core.design.CampoTelefone
 import com.clickorcamento.app.core.design.CampoTexto
 import com.clickorcamento.app.core.format.formatarBr
 import com.clickorcamento.app.core.format.formatarMoeda
@@ -74,7 +76,7 @@ fun ClienteFormulario(
                 aoMudar = { aoMudar(form.copy(razaoSocial = it)) }
             )
             Par(largo) {
-                CampoTexto(
+                CampoCpfCnpj(
                     valor = form.cnpj,
                     rotulo = "CNPJ ou CPF",
                     habilitado = editavel,
@@ -82,11 +84,11 @@ fun ClienteFormulario(
                     aoMudar = { v -> aoMudar(form.copy(cnpj = v)) }
                 )
                 CampoTexto(
-                    valor = form.contato,
-                    rotulo = "Contato",
+                    valor = form.inscricaoEstadual,
+                    rotulo = "Inscrição estadual",
                     habilitado = editavel,
                     modifier = it,
-                    aoMudar = { v -> aoMudar(form.copy(contato = v)) }
+                    aoMudar = { v -> aoMudar(form.copy(inscricaoEstadual = v)) }
                 )
             }
             CampoTexto(
@@ -97,11 +99,9 @@ fun ClienteFormulario(
                 aoMudar = { aoMudar(form.copy(endereco = it)) }
             )
             Par(largo) {
-                CampoTexto(
+                CampoTelefone(
                     valor = form.telefone,
-                    rotulo = "Telefone",
                     habilitado = editavel,
-                    teclado = KeyboardType.Phone,
                     modifier = it,
                     aoMudar = { v -> aoMudar(form.copy(telefone = v)) }
                 )

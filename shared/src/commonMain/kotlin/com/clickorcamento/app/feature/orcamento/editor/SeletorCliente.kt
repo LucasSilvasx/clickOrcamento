@@ -33,12 +33,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.clickorcamento.app.core.design.Avatar
 import com.clickorcamento.app.core.design.CaixaMensagemAnimada
+import com.clickorcamento.app.core.design.CampoCpfCnpj
+import com.clickorcamento.app.core.design.CampoTelefone
 import com.clickorcamento.app.core.design.CampoTexto
+import com.clickorcamento.app.core.format.formatarCpfCnpj
 import com.clickorcamento.app.core.format.iniciaisDe
 import com.clickorcamento.app.domain.model.Cliente
 import com.clickorcamento.app.feature.cliente.FormularioCliente
@@ -144,7 +146,7 @@ private fun LinhaClienteSeletor(cliente: Cliente, selecionado: Boolean, aoClicar
             )
             if (cliente.cnpj.isNotBlank()) {
                 Text(
-                    text = cliente.cnpj,
+                    text = formatarCpfCnpj(cliente.cnpj),
                     style = MaterialTheme.typography.labelSmall,
                     color = cores.onSurfaceVariant
                 )
@@ -177,17 +179,15 @@ fun NovoClienteDialogo(
                     habilitado = editavel,
                     aoMudar = { aoMudar(form.copy(razaoSocial = it)) }
                 )
-                CampoTexto(
+                CampoCpfCnpj(
                     valor = form.cnpj,
                     rotulo = "CNPJ ou CPF",
                     habilitado = editavel,
                     aoMudar = { aoMudar(form.copy(cnpj = it)) }
                 )
-                CampoTexto(
+                CampoTelefone(
                     valor = form.telefone,
-                    rotulo = "Telefone",
                     habilitado = editavel,
-                    teclado = KeyboardType.Phone,
                     ultimo = true,
                     aoMudar = { aoMudar(form.copy(telefone = it)) }
                 )

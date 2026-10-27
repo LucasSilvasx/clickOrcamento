@@ -33,6 +33,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.clickorcamento.app.core.design.CampoCpfCnpj
+import com.clickorcamento.app.core.design.CampoTelefone
 
 /**
  * Formulário de empresa (criar e editar). Stateless: recebe o
@@ -75,9 +77,8 @@ fun EmpresaFormulario(
                 habilitado = editavel,
                 aoMudar = { aoMudar(form.copy(nomeRazaoSocial = it)) }
             )
-            Campo(
+            CampoCpfCnpj(
                 valor = form.cpfCnpj,
-                rotulo = "CPF ou CNPJ",
                 habilitado = editavel,
                 aoMudar = { aoMudar(form.copy(cpfCnpj = it)) }
             )
@@ -88,11 +89,9 @@ fun EmpresaFormulario(
                 linhasMinimas = 2,
                 aoMudar = { aoMudar(form.copy(endereco = it)) }
             )
-            Campo(
+            CampoTelefone(
                 valor = form.telefone,
-                rotulo = "Telefone",
                 habilitado = editavel,
-                teclado = KeyboardType.Phone,
                 aoMudar = { aoMudar(form.copy(telefone = it)) }
             )
             Campo(

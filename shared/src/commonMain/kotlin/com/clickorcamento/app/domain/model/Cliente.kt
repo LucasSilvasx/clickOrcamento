@@ -9,7 +9,8 @@ data class Cliente(
     val razaoSocial: String,
     val cnpj: String,
     val endereco: String,
-    val contato: String,
+    /** Inscrição estadual. Texto livre: o formato muda por estado e pode ser "ISENTO". */
+    val inscricaoEstadual: String,
     val telefone: String,
     val email: String
 )
@@ -19,7 +20,8 @@ data class DadosCliente(
     val razaoSocial: String,
     val cnpj: String,
     val endereco: String,
-    val contato: String,
+    /** Inscrição estadual. Texto livre: o formato muda por estado e pode ser "ISENTO". */
+    val inscricaoEstadual: String,
     val telefone: String,
     val email: String
 )

@@ -50,6 +50,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.clickorcamento.app.core.format.formatarCpfCnpj
 import com.clickorcamento.app.domain.model.Prestador
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -313,7 +314,7 @@ private fun CartaoEmpresa(
                 )
                 if (!empresa.cpfCnpj.isNullOrBlank()) {
                     Text(
-                        text = empresa.cpfCnpj,
+                        text = formatarCpfCnpj(empresa.cpfCnpj),
                         style = MaterialTheme.typography.labelSmall,
                         color = cores.onSurfaceVariant
                     )
