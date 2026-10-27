@@ -11,11 +11,14 @@ import com.clickorcamento.app.core.format.lerDataBr
 import com.clickorcamento.app.core.format.lerQuantidade
 import com.clickorcamento.app.core.format.mascararData
 import com.clickorcamento.app.core.format.maisDias
+import com.clickorcamento.app.core.pdf.gerarPdfOrcamento
+import com.clickorcamento.app.core.pdf.nomeArquivoPdf
 import com.clickorcamento.app.domain.model.Cliente
 import com.clickorcamento.app.domain.model.DadosOrcamento
 import com.clickorcamento.app.domain.model.ItemOrcamento
 import com.clickorcamento.app.domain.model.Orcamento
 import com.clickorcamento.app.domain.model.Prestador
+import com.clickorcamento.app.domain.model.StatusOrcamento
 import com.clickorcamento.app.domain.repository.ClienteRepository
 import com.clickorcamento.app.domain.repository.OrcamentoRepository
 import com.clickorcamento.app.domain.repository.PrestadorRepository
@@ -231,15 +234,16 @@ class EditorOrcamentoViewModel(
 
     // ───────────────────────────── Salvar ─────────────────────────────
 
-    fun salvarRascunho() = salvar(avisoPdf = false)
+    fun salvarRascunho() = salvar(gerarPdf = false)
 
     /**
-     * O PDF ainda não existe (é a última etapa do projeto). Por enquanto este
-     * botão salva o orçamento e avisa; quando o gerador existir, é aqui que ele entra.
+     * Salva e gera o PDF. O caminho completo é:
+     * salvar -> gerar os bytes (aqui) -> a TELA entrega o arquivo -> [aoEntregarPdf]
+     * marca o orçamento como Emitido.
      */
-    fun gerarPdf() = salvar(avisoPdf = true)
+    fun gerarPdf() = salvar(gerarPdf = true)
 
-    private fun salvar(avisoPdf: Boolean) {
+    private fun salvar(gerarPdf: Boolean) {
         val estado = _uiState.value
         if (!estado.podeSalvar) return
 
@@ -251,10 +255,10 @@ class EditorOrcamentoViewModel(
             is Validacao.Ok -> resultado.dados
         }
 
-        _uiState.update { it.copy(salvando = true, erro = null, aviso = null) }
+        _uiState.update { it.copy(salvando = true, gerandoPdf = gerarPdf, erro = null, aviso = null) }
 
         viewModelScope.launch {
-            runCatching {
+            val salvo = runCatching {
                 val idAtual = estado.id
                 if (idAtual == null) {
                     val criado = orcamentos.criar(dados)
@@ -263,23 +267,78 @@ class EditorOrcamentoViewModel(
                     orcamentos.atualizar(idAtual, dados)
                     idAtual to estado.numero
                 }
-            }.onSuccess { (id, numero) ->
-                _uiState.update {
-                    it.copy(
-                        salvando = false,
-                        id = id,
-                        numero = numero,
-                        aviso = if (avisoPdf) {
-                            "Orçamento salvo. A geração de PDF ainda não está disponível."
-                        } else {
-                            "Orçamento salvo"
-                        }
-                    )
-                }
-            }.onFailure { e ->
+            }.getOrElse { e ->
                 // Tudo que o usuário digitou continua na tela (UI-UX, princípio 5).
-                _uiState.update { it.copy(salvando = false, erro = traduzirErroSalvar(e)) }
+                _uiState.update { it.copy(salvando = false, gerandoPdf = false, erro = traduzirErroSalvar(e)) }
+                return@launch
             }
+            val (id, numero) = salvo
+
+            if (!gerarPdf) {
+                _uiState.update { it.copy(salvando = false, id = id, numero = numero, aviso = "Orçamento salvo") }
+                return@launch
+            }
+
+            runCatching { montarPdf(numero, dados, estado) }
+                .onSuccess { pdf ->
+                    _uiState.update {
+                        it.copy(salvando = false, gerandoPdf = false, id = id, numero = numero, pdfParaEntregar = pdf)
+                    }
+                }
+                .onFailure { e ->
+                    _uiState.update {
+                        it.copy(
+                            salvando = false,
+                            gerandoPdf = false,
+                            id = id,
+                            numero = numero,
+                            erro = "Orçamento salvo, mas não foi possível gerar o PDF. ${e.message.orEmpty()}"
+                        )
+                    }
+                }
+        }
+    }
+
+    /** Usa a empresa e o cliente que estão na tela (os dados de hoje, não os da época da emissão). */
+    private fun montarPdf(numero: Int?, dados: DadosOrcamento, estado: EditorOrcamentoUiState): PdfPronto {
+        val numeroSalvo = checkNotNull(numero) { "o orçamento salvo veio sem número" }
+        val empresa = checkNotNull(estado.empresaSelecionada) { "empresa não encontrada" }
+        val cliente = checkNotNull(estado.clienteSelecionado) { "cliente não encontrado" }
+        return PdfPronto(
+            nomeArquivo = nomeArquivoPdf(numeroSalvo, cliente),
+            bytes = gerarPdfOrcamento(numeroSalvo, dados, empresa, cliente)
+        )
+    }
+
+    /**
+     * A tela entregou o PDF. [mensagem] `null` = o usuário cancelou (fechou o
+     * "Salvar como"): o orçamento fica salvo, mas continua no status que estava.
+     */
+    fun aoEntregarPdf(mensagem: String?) {
+        _uiState.update { it.copy(pdfParaEntregar = null, aviso = mensagem ?: "Orçamento salvo") }
+        if (mensagem != null) marcarComoEmitido()
+    }
+
+    fun aoFalharEntregaPdf(e: Throwable) {
+        _uiState.update {
+            it.copy(pdfParaEntregar = null, erro = "Orçamento salvo, mas não foi possível salvar o PDF. ${e.message.orEmpty()}")
+        }
+    }
+
+    /** Gerar o PDF é emitir o orçamento: Rascunho vira Emitido. Aprovado e Recusado não mudam. */
+    private fun marcarComoEmitido() {
+        val estado = _uiState.value
+        val id = estado.id ?: return
+        if (estado.status != StatusOrcamento.RASCUNHO) return
+
+        viewModelScope.launch {
+            runCatching { orcamentos.atualizarStatus(id, StatusOrcamento.EMITIDO) }
+                .onSuccess { _uiState.update { it.copy(status = StatusOrcamento.EMITIDO) } }
+                .onFailure {
+                    _uiState.update {
+                        it.copy(erro = "O PDF foi gerado, mas o status não mudou para Emitido. Altere pela lista de orçamentos.")
+                    }
+                }
         }
     }
 

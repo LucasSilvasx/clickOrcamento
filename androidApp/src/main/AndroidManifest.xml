@@ -17,6 +17,19 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
+        <!-- Libera o PDF gerado para o app que vai recebê-lo (WhatsApp, Gmail...).
+             Usado em shared/src/androidMain/.../core/pdf/EntregadorPdf.android.kt;
+             a authority precisa bater com "<pacote>.arquivos" de lá. -->
+        <provider
+                android:name="androidx.core.content.FileProvider"
+                android:authorities="${applicationId}.arquivos"
+                android:exported="false"
+                android:grantUriPermissions="true">
+            <meta-data
+                    android:name="android.support.FILE_PROVIDER_PATHS"
+                    android:resource="@xml/caminhos_arquivos"/>
+        </provider>
     </application>
 
 </manifest>

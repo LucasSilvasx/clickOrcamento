@@ -42,6 +42,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -65,6 +66,7 @@ import com.clickorcamento.app.core.design.ErroComRetentativa
 import com.clickorcamento.app.core.design.LarguraMinimaDesktop
 import com.clickorcamento.app.core.format.formatarMoeda
 import com.clickorcamento.app.core.format.lerDataBr
+import com.clickorcamento.app.core.pdf.rememberEntregadorPdf
 import com.clickorcamento.app.feature.cliente.FormularioCliente
 import com.clickorcamento.app.feature.orcamento.BadgeStatus
 import com.clickorcamento.app.feature.orcamento.textoNumero
@@ -144,6 +146,16 @@ fun EditorOrcamentoScreen(
         salvarRascunho = viewModel::salvarRascunho,
         gerarPdf = viewModel::gerarPdf
     )
+
+    // Quando o ViewModel termina um PDF, a tela entrega (salvar / compartilhar /
+    // baixar, conforme a plataforma) e devolve o resultado para ele.
+    val entregador = rememberEntregadorPdf()
+    LaunchedEffect(state.pdfParaEntregar) {
+        val pdf = state.pdfParaEntregar ?: return@LaunchedEffect
+        runCatching { entregador.entregar(pdf.nomeArquivo, pdf.bytes) }
+            .onSuccess(viewModel::aoEntregarPdf)
+            .onFailure(viewModel::aoFalharEntregaPdf)
+    }
 
     EditorConteudo(state, acoes)
 }
@@ -737,7 +749,7 @@ private fun androidx.compose.foundation.layout.RowScope.BotoesDeAcao(
         shape = forma,
         modifier = larguraBotao.height(50.dp)
     ) {
-        if (state.salvando) {
+        if (state.salvando && !state.gerandoPdf) {
             CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
         } else {
             Text(rotuloSalvar, style = MaterialTheme.typography.labelLarge)
@@ -749,8 +761,12 @@ private fun androidx.compose.foundation.layout.RowScope.BotoesDeAcao(
         shape = forma,
         modifier = larguraBotao.height(50.dp)
     ) {
-        Icon(Icons.Outlined.PictureAsPdf, contentDescription = null, modifier = Modifier.size(18.dp))
-        Spacer(Modifier.width(6.dp))
-        Text("Gerar PDF", style = MaterialTheme.typography.labelLarge)
+        if (state.gerandoPdf) {
+            CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+        } else {
+            Icon(Icons.Outlined.PictureAsPdf, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(6.dp))
+            Text("Gerar PDF", style = MaterialTheme.typography.labelLarge)
+        }
     }
 }

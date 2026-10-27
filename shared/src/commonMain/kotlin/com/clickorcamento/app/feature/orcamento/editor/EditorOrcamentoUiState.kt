@@ -35,6 +35,13 @@ data class ItemForm(
         get() = valor.isNotBlank() && lerCentavos(valor) == null
 }
 
+/**
+ * Os bytes do PDF e o nome sugerido para o arquivo. Não é `data class` de
+ * propósito: comparar o conteúdo de um ByteArray a cada mudança de estado seria
+ * desperdício; basta saber se é o mesmo objeto.
+ */
+class PdfPronto(val nomeArquivo: String, val bytes: ByteArray)
+
 /** Estado do editor de orçamento num objeto só. */
 data class EditorOrcamentoUiState(
     val carregando: Boolean = true,
@@ -66,6 +73,14 @@ data class EditorOrcamentoUiState(
     val novoCliente: FormularioCliente? = null,
 
     val salvando: Boolean = false,
+    /** O salvamento em andamento veio do "Gerar PDF" (o indicador aparece nesse botão). */
+    val gerandoPdf: Boolean = false,
+    /**
+     * PDF pronto esperando a TELA entregá-lo (salvar, compartilhar ou baixar).
+     * O ViewModel não faz isso sozinho porque a entrega depende da plataforma
+     * (no Android, do `Context`); ver `core/pdf/EntregadorPdf.kt`.
+     */
+    val pdfParaEntregar: PdfPronto? = null,
     val erro: String? = null,
     val aviso: String? = null
 ) {
@@ -102,9 +117,12 @@ data class EditorOrcamentoUiState(
         get() = (desconto.isNotBlank() && lerCentavos(desconto) == null) ||
             descontoCentavos > subtotalCentavos
 
-    /** Salvar rascunho: precisa de empresa e cliente (as duas FKs do banco são obrigatórias). */
+    /**
+     * Salvar rascunho: precisa de empresa e cliente (as duas FKs do banco são obrigatórias).
+     * Bloqueado também enquanto um PDF está sendo entregue, para não gerar dois.
+     */
     val podeSalvar: Boolean
-        get() = pronto && !salvando && prestadorId != null && clienteId != null
+        get() = pronto && !salvando && pdfParaEntregar == null && prestadorId != null && clienteId != null
 
     /** Gerar PDF: além do cliente, ao menos um item com descrição (docs/UI-UX.md, seção 5.3). */
     val podeGerarPdf: Boolean
