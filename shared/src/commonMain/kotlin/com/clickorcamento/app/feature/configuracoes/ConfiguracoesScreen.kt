@@ -57,7 +57,7 @@ import org.koin.compose.viewmodel.koinViewModel
 /** Largura máxima do conteúdo: formulários e listas não devem esticar na tela inteira. */
 private val LarguraMaxima = 780.dp
 
-/** Formulário simples: mais estreito que a lista (docs/UI-UX.md, seção 6). */
+/** Formulário simples: mais estreito que a lista. */
 private val LarguraFormulario = 560.dp
 
 /** Só conhece o ViewModel e repassa; o desenho está em [ConfiguracoesConteudo]. */
@@ -272,8 +272,7 @@ private fun CartaoEmpresa(
         enabled = habilitado,
         shape = RoundedCornerShape(12.dp),
         color = cores.surface,
-        // A empresa padrão ganha a borda da cor principal, como o cartão
-        // selecionado do mockup.
+        // A empresa padrão ganha borda na cor principal para se destacar.
         border = BorderStroke(
             width = if (empresa.padrao) 1.5.dp else 1.dp,
             color = if (empresa.padrao) cores.primary else cores.outlineVariant
@@ -375,7 +374,7 @@ private fun MenuEmpresa(
     }
 }
 
-/** Pílula `primaryContainer` (docs/UI-UX.md, seção 3). */
+/** Pílula `primaryContainer`. */
 @Composable
 private fun Badge(texto: String) {
     Box(

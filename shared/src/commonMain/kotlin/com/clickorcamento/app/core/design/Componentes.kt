@@ -42,12 +42,11 @@ import com.clickorcamento.app.core.format.limparCpfCnpj
 import com.clickorcamento.app.core.format.limparTelefone
 
 /**
- * Componentes visuais reutilizados por Clientes, Orçamentos e Editor
- * (docs/UI-UX.md, seção 3). Configurações ainda tem cópias privadas das
- * mesmas peças; dá para migrar depois, sem pressa.
+ * Componentes visuais reutilizados por Clientes, Orçamentos e Editor.
+ * TODO: Configurações ainda usa cópias privadas destas peças.
  */
 
-/** Abaixo disso o app usa o layout de celular (docs/UI-UX.md, seção 6). */
+/** Abaixo desta largura o app usa o layout de celular. */
 val LarguraMinimaDesktop = 600.dp
 
 /** Pílula: `primaryContainer` por padrão, `surfaceVariant` quando [neutro]. */

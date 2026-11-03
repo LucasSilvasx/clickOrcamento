@@ -121,7 +121,7 @@ private fun ClientesConteudo(
         }
 
         if (largo) {
-            // Master-detail: lista à esquerda, formulário à direita (mockup, seção 2).
+            // Master-detail: lista à esquerda, formulário à direita.
             Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(20.dp)) {
                 Column(Modifier.width(400.dp).fillMaxHeight()) {
                     ListaDeClientes(
@@ -137,7 +137,7 @@ private fun ClientesConteudo(
                 Box(Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState())) {
                     if (form != null) {
                         // Cartão do detalhe: surface com borda fina e cantos 12.dp;
-                        // largura limitada, formulário simples não estica (UI-UX, seção 6).
+                        // largura limitada, formulário simples não estica.
                         Box(
                             Modifier
                                 .fillMaxWidth()
@@ -223,8 +223,8 @@ private fun ListaDeClientes(
                 }
                 Spacer(Modifier.weight(1f))
                 if (state.clientes.isNotEmpty()) {
-                    // Botão da tela (um só de destaque). No mockup é contornado porque o
-                    // painel da direita já traz o "Salvar" cheio.
+                    // Contornado, não cheio: o "Salvar" do painel da direita já é o
+                    // botão principal da tela.
                     OutlinedButton(onClick = aoNovo, shape = RoundedCornerShape(12.dp)) {
                         Icon(Icons.Outlined.PersonAdd, contentDescription = null)
                         Spacer(Modifier.width(6.dp))

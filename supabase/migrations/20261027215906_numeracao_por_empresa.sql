@@ -1,5 +1,3 @@
--- Aplicada em 27/10/2026 (versão 20261027215906 no Supabase).
---
 -- Numeração dos orçamentos passa a ser POR EMPRESA (prestador), não por usuário.
 --   Empresa nova            -> o primeiro orçamento é o nº 1.
 --   Empresa que já emitiu   -> continua do maior número dela + 1.

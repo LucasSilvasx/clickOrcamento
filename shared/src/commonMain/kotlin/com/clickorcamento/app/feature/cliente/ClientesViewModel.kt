@@ -84,7 +84,7 @@ class ClientesViewModel(
                 _uiState.update { it.copy(formulario = null, aviso = "Cliente salvo") }
                 carregar()
             }.onFailure { e ->
-                // Formulário continua aberto e preenchido (UI-UX: nunca perder dado digitado).
+                // O formulário continua aberto e preenchido: o usuário não perde o que digitou.
                 _uiState.update {
                     it.copy(formulario = form.copy(salvando = false, erro = traduzirErroSalvar(e)))
                 }

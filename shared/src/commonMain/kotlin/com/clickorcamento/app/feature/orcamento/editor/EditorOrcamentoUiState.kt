@@ -87,7 +87,7 @@ data class EditorOrcamentoUiState(
     val titulo: String
         get() = if (id == null) "Novo orçamento" else "Orçamento"
 
-    /** O editor depende de ter ao menos uma empresa (docs/UI-UX.md, seção 5.5). */
+    /** O editor precisa de ao menos uma empresa cadastrada. */
     val semEmpresa: Boolean
         get() = !carregando && erroCarga == null && empresas.isEmpty()
 
@@ -124,7 +124,7 @@ data class EditorOrcamentoUiState(
     val podeSalvar: Boolean
         get() = pronto && !salvando && pdfParaEntregar == null && prestadorId != null && clienteId != null
 
-    /** Gerar PDF: além do cliente, ao menos um item com descrição (docs/UI-UX.md, seção 5.3). */
+    /** Gerar PDF: além do cliente, precisa de ao menos um item com descrição. */
     val podeGerarPdf: Boolean
         get() = podeSalvar && itens.any { it.descricao.isNotBlank() }
 }

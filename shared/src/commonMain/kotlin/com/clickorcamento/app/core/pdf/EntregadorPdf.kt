@@ -11,7 +11,7 @@ import androidx.compose.runtime.Composable
  *
  * Gerar os bytes é igual em todo lugar ([gerarPdfOrcamento], em commonMain);
  * só ESTA parte precisa de `expect/actual`, porque cada sistema guarda e
- * compartilha arquivos de um jeito (CLAUDE.md, seção 6).
+ * compartilha arquivos de um jeito.
  */
 interface EntregadorPdf {
     /** @return a mensagem para mostrar na tela, ou `null` se o usuário cancelou. */

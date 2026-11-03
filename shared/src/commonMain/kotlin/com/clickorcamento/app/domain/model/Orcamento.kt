@@ -22,7 +22,7 @@ data class ItemOrcamento(
     val unidade: String,
     val valorUnitarioCentavos: Long
 ) {
-    /** Nada de total salvo: sempre calculado (CLAUDE.md, seção 6). */
+    /** O total não é gravado no banco: é sempre calculado. */
     val totalCentavos: Long
         get() = totalDaLinha(quantidade, valorUnitarioCentavos)
 }

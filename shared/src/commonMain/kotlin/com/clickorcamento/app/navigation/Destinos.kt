@@ -21,10 +21,7 @@ data class Destino(
     val icone: ImageVector // só o celular usa; no desktop as abas são só texto
 )
 
-/**
- * Ordem aqui = ordem na tela. Ícones iguais aos do mockup
- * (docs/mockups/telas-clickorcamento.html): receipt_long, group, settings.
- */
+/** A ordem da lista é a ordem das abas na tela. */
 val destinos = listOf(
     Destino(RotaOrcamentos, RotaOrcamentos::class, "Orçamentos", Icons.Outlined.ReceiptLong),
     Destino(RotaClientes, RotaClientes::class, "Clientes", Icons.Outlined.Group),

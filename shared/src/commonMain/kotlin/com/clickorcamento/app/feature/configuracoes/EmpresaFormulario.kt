@@ -41,7 +41,7 @@ import com.clickorcamento.app.core.design.CampoTelefone
  * [FormularioEmpresa] e devolve o formulário inteiro já alterado em
  * `aoMudar` (`form.copy(apelido = it)`), que o ViewModel guarda.
  *
- * Largura limitada (docs/UI-UX.md, seção 6): formulário simples não estica.
+ * Largura limitada: formulário simples não estica.
  */
 @Composable
 fun EmpresaFormulario(

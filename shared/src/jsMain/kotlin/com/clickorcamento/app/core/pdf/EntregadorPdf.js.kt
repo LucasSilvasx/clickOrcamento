@@ -3,8 +3,8 @@ package com.clickorcamento.app.core.pdf
 import androidx.compose.runtime.Composable
 import kotlin.io.encoding.Base64
 
-// Cópia do EntregadorPdf.wasmJs.kt para o alvo `js`, que ainda existe mas vai
-// ser removido (CLAUDE.md, pendências). Quando ele sair, este arquivo sai junto.
+// Cópia do EntregadorPdf.wasmJs.kt para o alvo `js`, que vai ser removido.
+// Quando ele sair, este arquivo sai junto.
 
 @Composable
 actual fun rememberEntregadorPdf(): EntregadorPdf = EntregadorPdfWeb

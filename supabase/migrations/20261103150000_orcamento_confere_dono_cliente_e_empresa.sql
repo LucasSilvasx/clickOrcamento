@@ -1,5 +1,3 @@
--- Rodar no Supabase: SQL Editor -> colar tudo -> Run. (03/11/2026)
---
 -- FKs não passam pelo RLS: sem esta checagem, um usuário que soubesse o id
 -- de um cliente (ou empresa) de outra pessoa conseguiria ligar esse registro
 -- a um orçamento próprio. Roda em todo INSERT e em UPDATE das colunas de dono.

@@ -10,8 +10,6 @@ import kotlinx.serialization.Serializable
  * marcado com @Serializable: o compilador checa os tipos e some o risco de
  * errar uma string. Quando o editor precisar de argumento, vira, por ex.:
  * `data class Editor(val orcamentoId: String? = null)`.
- *
- * As três áreas vêm do docs/UI-UX.md (seção 4).
  */
 /**
  * Área Orçamentos. Agora é um "grafo": uma pasta que agrupa a lista e o editor.

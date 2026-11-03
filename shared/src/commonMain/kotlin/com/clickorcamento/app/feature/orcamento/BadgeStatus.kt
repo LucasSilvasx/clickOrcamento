@@ -6,8 +6,8 @@ import com.clickorcamento.app.core.design.Badge
 import com.clickorcamento.app.domain.model.StatusOrcamento
 
 /**
- * Badge do status do orçamento. Segue o mockup: só "Aprovado" ganha a cor
- * principal (é a boa notícia); os demais ficam neutros.
+ * Badge do status do orçamento. Só "Aprovado" ganha a cor principal (é a
+ * boa notícia); os demais ficam neutros.
  */
 @Composable
 fun BadgeStatus(status: StatusOrcamento, modifier: Modifier = Modifier) {

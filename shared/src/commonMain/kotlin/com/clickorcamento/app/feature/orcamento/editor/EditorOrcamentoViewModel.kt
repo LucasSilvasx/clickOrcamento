@@ -71,8 +71,8 @@ class EditorOrcamentoViewModel(
 
     /**
      * Orçamento existente: preenche tudo com o que veio do banco.
-     * Orçamento novo: o sistema faz, o usuário confere (UI-UX, princípio 4) —
-     * emissão hoje, validade em 30 dias, empresa padrão e as condições dela.
+     * Orçamento novo: já vem com emissão hoje, validade em 30 dias, empresa
+     * padrão e as condições dela; o usuário só confere.
      */
     private fun montarEstado(
         base: EditorOrcamentoUiState,
@@ -267,7 +267,7 @@ class EditorOrcamentoViewModel(
                     idAtual to orcamentos.atualizar(idAtual, dados)
                 }
             }.getOrElse { e ->
-                // Tudo que o usuário digitou continua na tela (UI-UX, princípio 5).
+                // Tudo que o usuário digitou continua na tela.
                 _uiState.update { it.copy(salvando = false, gerandoPdf = false, erro = traduzirErroSalvar(e)) }
                 return@launch
             }

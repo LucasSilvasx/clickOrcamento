@@ -54,7 +54,7 @@ fun ClickNavHost() {
     ) {
         NavHost(
             navController = navController,
-            startDestination = RotaOrcamentos // área inicial, conforme UI-UX.md
+            startDestination = RotaOrcamentos // o app abre na lista de orçamentos
         ) {
             navigation<RotaOrcamentos>(startDestination = RotaListaOrcamentos) {
                 composable<RotaListaOrcamentos> {

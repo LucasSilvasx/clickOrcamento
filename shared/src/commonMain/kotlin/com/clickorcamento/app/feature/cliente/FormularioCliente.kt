@@ -28,7 +28,7 @@ data class FormularioCliente(
     val titulo: String
         get() = if (editando) "Editar cliente" else "Novo cliente"
 
-    /** Só a razão social é obrigatória (docs/UI-UX.md, seção 5.4). */
+    /** Só a razão social é obrigatória. */
     val podeSalvar: Boolean
         get() = !salvando && razaoSocial.isNotBlank()
 

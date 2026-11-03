@@ -26,8 +26,8 @@ data class ConfiguracoesUiState(
     /** Confirmação discreta da última ação ("Empresa salva"). */
     val aviso: String? = null
 ) {
-    // As quatro situações da tela (docs/UI-UX.md, seção 7), derivadas aqui
-    // para a tela só ler e escolher o que desenhar.
+    // Situações da tela, derivadas aqui para a tela só ler e escolher o que
+    // desenhar.
     val mostrarCarregando: Boolean
         get() = carregando && empresas.isEmpty()
 

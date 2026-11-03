@@ -73,7 +73,7 @@ import com.clickorcamento.app.feature.orcamento.textoNumero
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
-/** Largura máxima do editor no desktop (docs/UI-UX.md, seção 6). */
+/** Largura máxima do editor no desktop. */
 private val LarguraMaximaEditor = 1000.dp
 
 /** Abaixo disso a tabela de itens fica apertada demais: os itens viram cartões, como no celular. */
@@ -220,7 +220,7 @@ private fun EditorDesktop(state: EditorOrcamentoUiState, acoes: AcoesEditor, tab
             Spacer(Modifier.height(16.dp))
 
             if (state.pronto) {
-                // O cartão do mockup: surface, borda fina, cantos 12.dp.
+                // Cartão: surface, borda fina, cantos 12.dp.
                 Surface(
                     shape = RoundedCornerShape(12.dp),
                     color = cores.surface,
@@ -254,7 +254,7 @@ private fun EditorCelular(state: EditorOrcamentoUiState, acoes: AcoesEditor) {
 
     // imePadding: quando o teclado abre, a barra de ações sobe junto em vez de ficar escondida.
     Column(Modifier.fillMaxSize().background(cores.background).imePadding()) {
-        // Barra de cima: seta de voltar, título e número (mockup 4b). Sem barra inferior de navegação.
+        // Barra de cima: seta de voltar, título e número. Sem barra inferior de navegação.
         Surface(color = cores.surface) {
             Column {
                 Row(

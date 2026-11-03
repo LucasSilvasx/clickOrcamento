@@ -51,8 +51,6 @@ import com.clickorcamento.app.core.design.LocalTemaEscuro
  * Moldura do app logado: escolhe o layout pela largura disponível e
  * desenha a navegação. O conteúdo da tela atual entra em `conteudo`.
  *
- * Medidas e cores seguem o mockup em docs/mockups/telas-clickorcamento.html.
- *
  * - Estreito (< 600.dp): barra de título com o nome da área, conteúdo e
  *   `NavigationBar` embaixo; padding 16.dp.
  * - Largo: barra do topo (marca, tema, avatar), abas e conteúdo com
@@ -257,10 +255,9 @@ private fun BarraTopoDesktop(iniciais: String) {
 }
 
 /**
- * Mockup "tabs": só texto, 28dp entre abas, a ativa em primary com
- * sublinhado de 3dp. Feito à mão (em vez de `TabRow`) porque o TabRow do
- * Material divide a largura em partes iguais e o mockup quer abas do
- * tamanho do texto, coladas à esquerda.
+ * Abas só de texto, 28dp entre elas, a ativa em primary com sublinhado de
+ * 3dp. Feitas à mão porque o `TabRow` do Material divide a largura em partes
+ * iguais, e aqui cada aba tem o tamanho do texto, alinhada à esquerda.
  */
 @Composable
 private fun AbasDesktop(destinoAtual: NavDestination?, aoSelecionar: (Destino) -> Unit) {

@@ -1,5 +1,3 @@
--- Aplicada em 27/10/2026 (versão 20261027180656 no Supabase).
---
 -- Preferências por usuário (uma linha por usuário).
 -- Primeiro uso: número inicial dos orçamentos, para quem migra de outra
 -- ferramenta (ex.: planilha) e precisa continuar a sequência.

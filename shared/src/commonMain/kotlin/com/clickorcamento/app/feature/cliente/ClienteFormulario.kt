@@ -187,7 +187,7 @@ private fun Cabecalho(
     aoVoltar: () -> Unit
 ) {
     if (largo) {
-        // Desktop: avatar + nome + resumo (mockup "Clientes").
+        // Desktop: avatar + nome + resumo.
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Avatar(iniciais = iniciaisDe(form.razaoSocial), tamanho = 44.dp)
             Column {
