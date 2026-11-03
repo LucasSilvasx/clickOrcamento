@@ -25,3 +25,8 @@ node_modules/
 CLAUDE.md
 docs/UI-UX.md
 docs/mockups/
+
+# Assinatura do Android: NUNCA versionar
+*.jks
+*.keystore
+keystore.properties
