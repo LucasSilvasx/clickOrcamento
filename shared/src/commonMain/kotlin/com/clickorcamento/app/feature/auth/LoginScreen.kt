@@ -259,7 +259,7 @@ private fun LoginConteudo(
 
             // AnimatedVisibility: o campo de confirmação desliza pra
             // dentro quando o usuário troca pra cadastro, em vez de
-            // pular na tela. Detalhe pequeno, diferença grande.
+            // pular na tela.
             AnimatedVisibility(
                 visible = state.modo == ModoAuth.CADASTRAR,
                 enter = expandVertically() + fadeIn(),
@@ -336,7 +336,7 @@ private fun LoginConteudo(
     }
 }
 
-/** Marca do app. Quando você tiver o logo, troca o Box por uma Image. */
+/** Marca do app. TODO: trocar o Box pelo logo (Image) quando houver um. */
 @Composable
 private fun Marca() {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {

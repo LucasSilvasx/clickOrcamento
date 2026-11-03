@@ -13,7 +13,7 @@ import com.clickorcamento.app.domain.model.Prestador
 /**
  * Gera o PDF do orçamento e devolve os bytes do arquivo.
  *
- * É Kotlin puro (commonMain): o MESMO código monta o PDF no desktop, no
+ * É Kotlin puro (commonMain): o mesmo código monta o PDF no desktop, no
  * Android e no navegador. O que muda por plataforma é só o que fazer com os
  * bytes (salvar, compartilhar, baixar), e isso fica em [EntregadorPdf].
  */

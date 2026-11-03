@@ -76,7 +76,7 @@ data class EditorOrcamentoUiState(
     /** O salvamento em andamento veio do "Gerar PDF" (o indicador aparece nesse botão). */
     val gerandoPdf: Boolean = false,
     /**
-     * PDF pronto esperando a TELA entregá-lo (salvar, compartilhar ou baixar).
+     * PDF pronto esperando a tela entregá-lo (salvar, compartilhar ou baixar).
      * O ViewModel não faz isso sozinho porque a entrega depende da plataforma
      * (no Android, do `Context`); ver `core/pdf/EntregadorPdf.kt`.
      */

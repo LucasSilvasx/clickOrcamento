@@ -186,7 +186,7 @@ fun CampoTelefone(
 }
 
 /**
- * Campo que NÃO digita: mostra o valor escolhido e abre algo ao tocar
+ * Campo que não digita: mostra o valor escolhido e abre algo ao tocar
  * (um menu, um diálogo...). É um OutlinedTextField somente leitura com uma
  * camada transparente por cima que captura o clique. O [menu] fica dentro do
  * mesmo Box para que o DropdownMenu abra ancorado no campo.

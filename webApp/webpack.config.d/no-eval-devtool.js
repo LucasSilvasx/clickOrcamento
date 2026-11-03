@@ -1,6 +1,6 @@
 // Em modo development, o Kotlin/Wasm já desliga config.devtool (igual
 // produção), mas empurra manualmente um EvalSourceMapDevToolPlugin:
-// é ESSE plugin, não o devtool, quem embrulha cada módulo em eval("...").
+// é esse plugin, não o devtool, quem embrulha cada módulo em eval("...").
 // O glue gerado pelo próprio plugin Kotlin/Wasm
 // (clickOrcamento-webApp.import-object.mjs) usa import.meta.url, e
 // import.meta dentro de um eval() é sempre SyntaxError no navegador,

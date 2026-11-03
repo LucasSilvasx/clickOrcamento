@@ -53,7 +53,7 @@ data class PrestadorDto(
  * serializador (e aí o valor antigo ficaria no banco); num JsonObject, o
  * campo sempre vai.
  *
- * Campo em branco vai como texto vazio (`""`), NÃO como `null`: no banco todas
+ * Campo em branco vai como texto vazio (`""`), não como `null`: no banco todas
  * as colunas de texto opcionais são `NOT NULL DEFAULT ''`. Mandar `null`
  * dá erro 23502 (not-null violation). No domínio continua `null` = "em branco".
  *

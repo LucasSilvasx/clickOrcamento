@@ -3,7 +3,7 @@ package com.clickorcamento.app.core.format
 import kotlin.math.roundToLong
 
 /**
- * Dinheiro vive em CENTAVOS (Long) no app inteiro; só vira texto aqui.
+ * Dinheiro vive em centavos (Long) no app inteiro; só vira texto aqui.
  * 130000 -> "1.300,00". Sem `java.text`/`String.format`: não existem no Wasm.
  */
 fun formatarValor(centavos: Long): String {

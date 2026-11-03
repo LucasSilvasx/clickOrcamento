@@ -138,7 +138,7 @@ class EditorOrcamentoViewModel(
     fun aoMudarValidade(texto: String) = editar { it.copy(validade = mascararData(texto)) }
 
     /**
-     * Trocar a empresa de um orçamento NOVO troca também as condições (elas são
+     * Trocar a empresa de um orçamento novo troca também as condições (elas são
      * o padrão da empresa). Num orçamento já salvo as condições não mudam: foram
      * copiadas na emissão e podem ter sido editadas.
      */
@@ -238,7 +238,7 @@ class EditorOrcamentoViewModel(
 
     /**
      * Salva e gera o PDF. O caminho completo é:
-     * salvar -> gerar os bytes (aqui) -> a TELA entrega o arquivo -> [aoEntregarPdf]
+     * salvar -> gerar os bytes (aqui) -> a tela entrega o arquivo -> [aoEntregarPdf]
      * marca o orçamento como Emitido.
      */
     fun gerarPdf() = salvar(gerarPdf = true)

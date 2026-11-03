@@ -1,7 +1,7 @@
 package com.clickorcamento.app.data.remote
 
 /**
- * Chave PUBLICÁVEL do projeto. Pode ir pro Git sem problema.
+ * Chave publicável do projeto. Pode ir pro Git sem problema.
  *
  * Ela não é segredo: vai dentro do app instalado e dentro do bundle
  * do navegador, onde qualquer um consegue ler. O que impede alguém

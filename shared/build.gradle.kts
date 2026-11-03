@@ -90,7 +90,7 @@ kotlin {
 
         jsMain.dependencies {
             implementation(libs.wrappers.browser)
-            implementation(libs.ktor.client.js)          // ← ACRESCENTE
+            implementation(libs.ktor.client.js)
         }
 
         wasmJsMain.dependencies {

@@ -10,7 +10,7 @@ import androidx.compose.runtime.Composable
  * - Web: download pelo navegador.
  *
  * Gerar os bytes é igual em todo lugar ([gerarPdfOrcamento], em commonMain);
- * só ESTA parte precisa de `expect/actual`, porque cada sistema guarda e
+ * só esta parte precisa de `expect/actual`, porque cada sistema guarda e
  * compartilha arquivos de um jeito.
  */
 interface EntregadorPdf {

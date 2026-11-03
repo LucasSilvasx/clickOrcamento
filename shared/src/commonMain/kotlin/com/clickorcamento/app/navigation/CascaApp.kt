@@ -275,7 +275,7 @@ private fun AbasDesktop(destinoAtual: NavDestination?, aoSelecionar: (Destino) -
 private fun AbaDesktop(titulo: String, selecionada: Boolean, aoClicar: () -> Unit) {
     val cores = MaterialTheme.colorScheme
     // width(IntrinsicSize.Max): a coluna tem a largura do texto. Sem isso, o
-    // fillMaxWidth() do sublinhado puxa TODA a largura da linha para a
+    // fillMaxWidth() do sublinhado puxa toda a largura da linha para a
     // primeira aba e espreme as outras (bug visto ao alargar a janela).
     Column(
         Modifier

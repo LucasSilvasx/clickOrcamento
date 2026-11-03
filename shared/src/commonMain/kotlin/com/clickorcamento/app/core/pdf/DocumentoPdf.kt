@@ -85,9 +85,9 @@ class DocumentoPdf(private val titulo: String) {
 }
 
 /**
- * Uma folha. As coordenadas que recebe são "de tela": (0, 0) no canto de CIMA
+ * Uma folha. As coordenadas que recebe são "de tela": (0, 0) no canto de cima
  * à esquerda e `y` crescendo para baixo, como no Compose. O PDF conta `y` de
- * BAIXO para cima, então cada comando converte com `AlturaA4 - y`.
+ * baixo para cima, então cada comando converte com `AlturaA4 - y`.
  */
 class PaginaPdf internal constructor() {
     internal val comandos = StringBuilder()
@@ -105,7 +105,7 @@ class PaginaPdf internal constructor() {
         )
     }
 
-    /** Texto com a LINHA DE BASE em [y] (a linha onde as letras "pisam"). */
+    /** Texto com a linha de base em [y] (a linha onde as letras "pisam"). */
     fun texto(x: Double, y: Double, texto: String, fonte: FontePdf, tamanho: Double, cor: CorPdf) {
         if (texto.isEmpty()) return
         comandos.append(

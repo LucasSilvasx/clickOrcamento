@@ -17,7 +17,7 @@ private var ultimaPasta: String? = null
 
 private object EntregadorPdfDesktop : EntregadorPdf {
     override suspend fun entregar(nomeArquivo: String, bytes: ByteArray): String? {
-        // FileDialog é a janela NATIVA do Windows (a mesma do Bloco de Notas).
+        // FileDialog é a janela nativa do Windows (a mesma do Bloco de Notas).
         val dialogo = FileDialog(null as Frame?, "Salvar orçamento em PDF", FileDialog.SAVE).apply {
             directory = ultimaPasta ?: pastaDocumentos()
             file = nomeArquivo

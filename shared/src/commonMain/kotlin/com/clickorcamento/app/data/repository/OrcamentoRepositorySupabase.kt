@@ -106,7 +106,7 @@ class OrcamentoRepositorySupabase(
     }
 
     /**
-     * Grava os itens SEM apagar tudo antes: faz upsert pela chave
+     * Grava os itens sem apagar tudo antes: faz upsert pela chave
      * (orcamento_id, ordem) e depois remove o que sobrou além do último item.
      * Se algo falhar no meio, os itens antigos continuam no banco (e o que o
      * usuário digitou continua na tela para salvar de novo).

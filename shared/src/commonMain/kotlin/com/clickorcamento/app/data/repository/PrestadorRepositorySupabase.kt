@@ -38,7 +38,7 @@ class PrestadorRepositorySupabase(
     }
 
     /**
-     * Dois passos, nesta ordem: o índice único parcial do banco só aceita UMA
+     * Dois passos, nesta ordem: o índice único parcial do banco só aceita uma
      * linha com padrao = true, então primeiro tiramos a marca da atual e só
      * depois marcamos a nova. Se o segundo passo falhar, o usuário fica sem
      * padrão até tentar de novo (nada se perde); o ViewModel recarrega a lista.
