@@ -41,7 +41,7 @@ O orçamento era feito numa planilha do Excel: **cada orçamento era uma cópia 
 | ![Editor](docs/prints/editor-desktop.png) | ![Lista](docs/prints/lista-celular.png) |
 -->
 
-O design das telas (desktop e celular, claro e escuro) está em [`docs/mockups/telas-clickorcamento.html`](docs/mockups/telas-clickorcamento.html), e o guia de interface em [`docs/UI-UX.md`](docs/UI-UX.md).
+Prints das telas em breve.
 
 ## 🧱 Stack
 
@@ -129,7 +129,7 @@ shared/src/commonMain/kotlin/com/clickorcamento/app/
 
 ## 🤖 Como foi desenvolvido
 
-Projeto pessoal em que aprendi Kotlin Multiplatform, vindo do Android nativo. Usei IA (Claude Code) como par de programação, com as decisões de arquitetura e o contexto do projeto documentados em um arquivo de contexto mantido junto do código.
+Projeto pessoal em que aprendi Kotlin Multiplatform, vindo do Android nativo. Usei IA (Claude Code) como par de programação, com as decisões de arquitetura e o contexto do projeto documentados em um arquivo de contexto mantido localmente.
 
 ## 👤 Autor
 
