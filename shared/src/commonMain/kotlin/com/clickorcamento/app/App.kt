@@ -32,7 +32,7 @@ fun App() {
 
             // sessionStatus é um StateFlow que o supabase-kt mantém
             // atualizado. Fazendo a raiz do app reagir a ele, o login e o
-            // logout trocam de tela sozinhos — nenhuma tela precisa
+            // logout trocam de tela sozinhos, e nenhuma tela precisa
             // "navegar" manualmente depois de autenticar.
             val sessao by supabase.auth.sessionStatus.collectAsState()
 

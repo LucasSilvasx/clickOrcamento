@@ -13,8 +13,7 @@ class CorPdf(rgb: Int) {
 /**
  * Um escritor de PDF mínimo, em Kotlin puro (roda igual no desktop, Android e web).
  *
- * Analogia: o PDF é uma "pilha de folhas", e cada folha guarda uma lista de
- * comandos de desenho ("pinte um retângulo azul aqui", "escreva este texto
+ * Cada folha guarda uma lista de comandos de desenho ("pinte um retângulo azul aqui", "escreva este texto
  * ali"). Esta classe junta as folhas e escreve o arquivo no formato que os
  * leitores entendem: objetos numerados + um índice (xref) dizendo em que byte
  * cada objeto começa.

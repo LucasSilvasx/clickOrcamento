@@ -192,7 +192,7 @@ private fun EditorConteudo(state: EditorOrcamentoUiState, acoes: AcoesEditor) {
     }
 }
 
-// ───────────────────────────── Desktop ─────────────────────────────
+// --- Desktop ---
 
 @Composable
 private fun EditorDesktop(state: EditorOrcamentoUiState, acoes: AcoesEditor, tabela: Boolean) {
@@ -246,7 +246,7 @@ private fun EditorDesktop(state: EditorOrcamentoUiState, acoes: AcoesEditor, tab
     }
 }
 
-// ───────────────────────────── Celular ─────────────────────────────
+// --- Celular ---
 
 @Composable
 private fun EditorCelular(state: EditorOrcamentoUiState, acoes: AcoesEditor) {
@@ -321,7 +321,7 @@ private fun EditorCelular(state: EditorOrcamentoUiState, acoes: AcoesEditor) {
     }
 }
 
-// ───────────────────────────── Estados sem formulário ─────────────────────────────
+// --- Estados sem formulário ---
 
 /** Carregando, erro de carga ou primeiro acesso sem empresa. */
 @Composable
@@ -338,7 +338,7 @@ private fun EstadoSemFormulario(state: EditorOrcamentoUiState, acoes: AcoesEdito
     }
 }
 
-// ───────────────────────────── Formulário ─────────────────────────────
+// --- Formulário ---
 
 @Composable
 private fun Formulario(
@@ -469,7 +469,7 @@ private fun CampoData(
     )
 }
 
-// ───────────────────────────── Itens ─────────────────────────────
+// --- Itens ---
 
 /** Linha da tabela (desktop): # | Descrição | Qtd | Un | Valor unit. | Total | lixeira. */
 @Composable
@@ -611,7 +611,7 @@ private fun CartaoItem(numero: Int, item: ItemForm, habilitado: Boolean, acoes: 
     }
 }
 
-// ───────────────────────────── Totais ─────────────────────────────
+// --- Totais ---
 
 /** Caixa `surfaceVariant`: subtotal, desconto (editável) e total geral em destaque. */
 @Composable
@@ -662,7 +662,7 @@ private fun CaixaTotais(state: EditorOrcamentoUiState, acoes: AcoesEditor, largo
     }
 }
 
-// ───────────────────────────── Condições ─────────────────────────────
+// --- Condições ---
 
 @Composable
 private fun Condicoes(state: EditorOrcamentoUiState, acoes: AcoesEditor, largo: Boolean) {
@@ -727,7 +727,7 @@ private fun Condicoes(state: EditorOrcamentoUiState, acoes: AcoesEditor, largo: 
     )
 }
 
-// ───────────────────────────── Botões ─────────────────────────────
+// --- Botões ---
 
 /**
  * "Salvar rascunho" (contornado) + "Gerar PDF" (o único botão de destaque da tela).

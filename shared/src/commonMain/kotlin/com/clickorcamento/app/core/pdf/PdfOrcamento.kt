@@ -27,7 +27,7 @@ fun nomeArquivoPdf(numero: Int, cliente: Cliente): String {
     return if (nomeCliente.isEmpty()) "$base.pdf" else "$base - $nomeCliente.pdf"
 }
 
-// ───────────────────────────── Aparência ─────────────────────────────
+// --- Aparência ---
 
 // Cores fixas de propósito: o PDF é "papel", não acompanha o tema escuro do app.
 // São as mesmas do tema claro (core/design/Cores.kt).
@@ -85,7 +85,7 @@ private class LayoutOrcamento(
         return documento.gerar()
     }
 
-    // ───────────── Cabeçalho (página 1): a "folha timbrada" da empresa ─────────────
+    // --- Cabeçalho (página 1): a "folha timbrada" da empresa ---
 
     private fun cabecalho() {
         val alturaFaixa = 100.0
@@ -138,7 +138,7 @@ private class LayoutOrcamento(
         y = 60.0
     }
 
-    // ───────────── Cliente ─────────────
+    // --- Cliente ---
 
     private fun blocoCliente() {
         titulo("CLIENTE")
@@ -165,7 +165,7 @@ private class LayoutOrcamento(
         y += 14
     }
 
-    // ───────────── Itens ─────────────
+    // --- Itens ---
 
     private fun tabelaItens() {
         garantirEspaco(60.0)
@@ -226,7 +226,7 @@ private class LayoutOrcamento(
         y += altura
     }
 
-    // ───────────── Totais ─────────────
+    // --- Totais ---
 
     private fun totais() {
         val subtotal = dados.itens.sumOf { it.totalCentavos }
@@ -256,7 +256,7 @@ private class LayoutOrcamento(
         y += alturaTotal + 24
     }
 
-    // ───────────── Condições e observações ─────────────
+    // --- Condições e observações ---
 
     private fun condicoes() {
         val campos = listOf(
@@ -282,7 +282,7 @@ private class LayoutOrcamento(
         }
     }
 
-    // ───────────── Rodapé (desenhado no fim, quando já se sabe o total de páginas) ─────────────
+    // --- Rodapé (desenhado no fim, quando já se sabe o total de páginas) ---
 
     private fun rodapes() {
         val total = documento.totalPaginas
@@ -295,7 +295,7 @@ private class LayoutOrcamento(
         }
     }
 
-    // ───────────── Peças reutilizadas ─────────────
+    // --- Peças reutilizadas ---
 
     /** Título de seção: texto azul em caixa alta com um fio azul embaixo. */
     private fun titulo(texto: String) {

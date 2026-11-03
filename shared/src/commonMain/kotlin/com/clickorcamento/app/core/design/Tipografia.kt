@@ -7,8 +7,8 @@ import androidx.compose.ui.unit.sp
 
 /**
  * Usa a fonte padrão de cada plataforma por enquanto. Fonte própria
- * exige empacotar o arquivo .ttf nos recursos compartilhados — dá pra
- * fazer depois, quando você definir a identidade visual.
+ * exige empacotar o arquivo .ttf nos recursos compartilhados; fica para
+ * quando houver uma identidade visual definida.
  *
  * Aqui só ajustamos peso e espaçamento, que já muda bastante a
  * percepção de qualidade.

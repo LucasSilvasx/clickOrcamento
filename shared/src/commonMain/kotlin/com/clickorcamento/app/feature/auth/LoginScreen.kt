@@ -189,9 +189,8 @@ private fun LoginConteudo(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // Botão de tema no canto. Sem ícone por enquanto — ícones
-        // como DarkMode vivem em material-icons-extended, que é uma
-        // dependência extra. Texto resolve e não pesa.
+        // Botão de tema no canto.
+        // TODO: trocar o texto pelo ícone, como na barra do topo do app.
         TextButton(
             onClick = alternarTema,
             modifier = Modifier.align(Alignment.TopEnd).padding(12.dp)

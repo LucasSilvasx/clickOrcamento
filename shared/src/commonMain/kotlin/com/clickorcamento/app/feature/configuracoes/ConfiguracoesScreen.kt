@@ -151,7 +151,7 @@ private fun ConfiguracoesConteudo(
     }
 }
 
-// ───────────────────────────── Empresas ─────────────────────────────
+// --- Empresas ---
 
 @Composable
 private fun SecaoEmpresas(
@@ -391,7 +391,7 @@ private fun Badge(texto: String) {
     }
 }
 
-// ───────────────────────────── Conta ─────────────────────────────
+// --- Conta ---
 
 @Composable
 private fun SecaoConta(email: String, onSair: () -> Unit) {

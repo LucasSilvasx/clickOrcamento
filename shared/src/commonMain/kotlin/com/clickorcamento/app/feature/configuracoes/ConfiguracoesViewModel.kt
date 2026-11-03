@@ -46,7 +46,7 @@ class ConfiguracoesViewModel(
         }
     }
 
-    // ───────────────────────────── Formulário ─────────────────────────────
+    // --- Formulário ---
 
     fun novaEmpresa() {
         _uiState.update { it.copy(formulario = FormularioEmpresa(), aviso = null, erroAcao = null) }
@@ -102,7 +102,7 @@ class ConfiguracoesViewModel(
         }
     }
 
-    // ─────────────────────── Padrão e exclusão ───────────────────────
+    // --- Padrão e exclusão ---
 
     fun definirComoPadrao(empresa: Prestador) {
         if (empresa.padrao) return
@@ -156,7 +156,7 @@ class ConfiguracoesViewModel(
         }
     }
 
-    // ───────────────────────────── Conta ─────────────────────────────
+    // --- Conta ---
 
     /**
      * Encerra a sessão. Não navegamos para lugar nenhum: o `sessionStatus`
@@ -170,7 +170,7 @@ class ConfiguracoesViewModel(
         }
     }
 
-    // ───────────────────────────── Erros ─────────────────────────────
+    // --- Erros ---
 
     private fun traduzirErroCarga(e: Throwable): String {
         val original = e.message.orEmpty()

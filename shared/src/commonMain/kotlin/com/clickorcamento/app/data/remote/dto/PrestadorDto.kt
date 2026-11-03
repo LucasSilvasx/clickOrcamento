@@ -13,7 +13,7 @@ import kotlinx.serialization.json.put
  * (snake_case) ao nome da propriedade em Kotlin (camelCase).
  *
  * Colunas que não declaramos (usuario_id, created_at, updated_at) são
- * ignoradas na leitura — o supabase-kt já configura o JSON para isso.
+ * ignoradas na leitura: o supabase-kt já configura o JSON para isso.
  */
 @Serializable
 data class PrestadorDto(

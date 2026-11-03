@@ -74,7 +74,7 @@ class PdfOrcamentoTest {
     }
 }
 
-// ───────────── Dados de exemplo (usados também pelo teste do desktop) ─────────────
+// --- Dados de exemplo (usados também pelo teste do desktop) ---
 
 internal val prestadorExemplo = Prestador(
     id = "p1",

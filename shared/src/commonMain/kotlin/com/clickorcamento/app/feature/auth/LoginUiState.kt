@@ -5,7 +5,7 @@ enum class ModoAuth { ENTRAR, CADASTRAR }
 /**
  * Todo o estado da tela num objeto só. Com estado espalhado em vários
  * StateFlow, a tela pode recompor num instante onde "email já mudou mas
- * erro ainda não" — estado inconsistente. Um objeto único sempre
+ * erro ainda não", um estado inconsistente. Um objeto único sempre
  * representa um momento coerente.
  */
 data class LoginUiState(

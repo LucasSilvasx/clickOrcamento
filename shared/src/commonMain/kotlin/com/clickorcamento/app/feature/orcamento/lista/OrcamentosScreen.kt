@@ -221,7 +221,7 @@ private fun OrcamentosConteudo(
     }
 }
 
-// ───────────────────────────── Busca e filtro ─────────────────────────────
+// --- Busca e filtro ---
 
 @Composable
 private fun Filtros(
@@ -262,7 +262,7 @@ private fun ChipStatus(texto: String, selecionado: Boolean, aoClicar: () -> Unit
     )
 }
 
-// ───────────────────────────── Desktop: tabela ─────────────────────────────
+// --- Desktop: tabela ---
 
 private val LarguraNumero = 96.dp
 private val LarguraData = 110.dp
@@ -370,7 +370,7 @@ private fun CabecalhoColuna(texto: String, modifier: Modifier, alinharADireita: 
     )
 }
 
-// ───────────────────────────── Celular: cartões ─────────────────────────────
+// --- Celular: cartões ---
 
 @Composable
 private fun CartoesOrcamentos(
@@ -444,7 +444,7 @@ private fun CartoesOrcamentos(
     }
 }
 
-// ───────────────────────────── Menu da linha ─────────────────────────────
+// --- Menu da linha ---
 
 /** Menu "três pontinhos": abrir, duplicar, mudar status e excluir. */
 @Composable

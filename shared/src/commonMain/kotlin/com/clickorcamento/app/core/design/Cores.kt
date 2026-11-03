@@ -4,8 +4,8 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 
-// Azul herdado do cabeçalho da planilha original — o app fica
-// visualmente coerente com o que seu cliente já conhece.
+// Azul herdado do cabeçalho da planilha original, para o app ficar
+// coerente com o orçamento que os clientes já conhecem.
 private val Azul900 = Color(0xFF14375A)
 private val Azul700 = Color(0xFF1F4E79)
 private val Azul300 = Color(0xFF7FB3E3)

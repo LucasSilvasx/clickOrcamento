@@ -61,10 +61,6 @@ import com.clickorcamento.app.core.design.LocalTemaEscuro
  * barras (seta de voltar e ações fixas), então a casca esconde a barra de título e a
  * inferior e não põe padding. A tela cheia precisa tratar sozinha as barras do sistema.
  * No desktop as abas continuam aparecendo.
- *
- * Analogia com o Android puro: é o `Scaffold` que você já conhece, só que
- * ele troca de "roupa" conforme o tamanho da janela, em vez de ter um
- * layout-sw600dp separado.
  */
 @Composable
 fun CascaApp(
@@ -83,7 +79,7 @@ fun CascaApp(
     }
 }
 
-// ───────────────────────────── Celular ─────────────────────────────
+// --- Celular ---
 
 @Composable
 private fun CascaCelular(
@@ -113,7 +109,7 @@ private fun CascaCelular(
     }
 }
 
-/** Mockup "appbar": 56dp, fundo surface, título 18sp semibold, divisor embaixo. */
+/** Barra de título do celular: 56dp, fundo surface, título 18sp semibold, divisor embaixo. */
 @Composable
 private fun BarraTituloCelular(titulo: String) {
     Surface(color = MaterialTheme.colorScheme.surface) {
@@ -141,7 +137,7 @@ private fun BarraTituloCelular(titulo: String) {
     }
 }
 
-/** Mockup "bottomnav": fundo surface, divisor em cima, "pílula" primaryContainer no item ativo. */
+/** Barra inferior: fundo surface, divisor em cima, "pílula" primaryContainer no item ativo. */
 @Composable
 private fun BarraInferior(destinoAtual: NavDestination?, aoSelecionar: (Destino) -> Unit) {
     val cores = MaterialTheme.colorScheme
@@ -174,7 +170,7 @@ private fun BarraInferior(destinoAtual: NavDestination?, aoSelecionar: (Destino)
     }
 }
 
-// ───────────────────────────── Desktop ─────────────────────────────
+// --- Desktop ---
 
 @Composable
 private fun CascaDesktop(
@@ -199,7 +195,7 @@ private fun CascaDesktop(
     }
 }
 
-/** Mockup "topbar": 56dp, marca à esquerda; à direita ícone de tema e avatar. */
+/** Barra do topo do desktop: 56dp, marca à esquerda; à direita ícone de tema e avatar. */
 @Composable
 private fun BarraTopoDesktop(iniciais: String) {
     val cores = MaterialTheme.colorScheme

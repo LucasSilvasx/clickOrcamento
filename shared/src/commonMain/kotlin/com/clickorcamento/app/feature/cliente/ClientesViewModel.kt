@@ -46,7 +46,7 @@ class ClientesViewModel(
         _uiState.update { it.copy(busca = texto) }
     }
 
-    // ───────────────────────────── Formulário ─────────────────────────────
+    // --- Formulário ---
 
     fun novoCliente() {
         _uiState.update { it.copy(formulario = FormularioCliente(), aviso = null) }
@@ -92,7 +92,7 @@ class ClientesViewModel(
         }
     }
 
-    // ───────────────────────────── Exclusão ─────────────────────────────
+    // --- Exclusão ---
 
     /** Chamado pelo botão "Excluir" do formulário aberto. */
     fun pedirExclusao() {
@@ -127,7 +127,7 @@ class ClientesViewModel(
         }
     }
 
-    // ───────────────────────────── Erros ─────────────────────────────
+    // --- Erros ---
 
     private fun traduzirErroCarga(e: Throwable): String =
         "Não foi possível carregar seus clientes. Verifique a conexão " +

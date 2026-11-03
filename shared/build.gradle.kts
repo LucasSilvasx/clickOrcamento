@@ -64,7 +64,7 @@ kotlin {
             // "platform(...)" marca esta dependência como uma bom: ela não
             // traz código nenhum, só dita as versões das linhas seguintes.
             // O "project.dependencies." na frente é necessário dentro de
-            // source sets de KMP — é um detalhe da API do Gradle, não seu erro.
+            // source sets de KMP (detalhe da API do Gradle).
             implementation(project.dependencies.platform(libs.supabase.bom))
 
             // Sem versão, de propósito: quem decide é a bom acima.

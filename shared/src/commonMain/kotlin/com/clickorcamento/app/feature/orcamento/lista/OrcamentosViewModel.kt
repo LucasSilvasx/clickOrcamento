@@ -50,7 +50,7 @@ class OrcamentosViewModel(
         _uiState.update { it.copy(filtro = status) }
     }
 
-    // ───────────────────────────── Ações por linha ─────────────────────────────
+    // --- Ações por linha ---
 
     fun duplicar(orcamento: OrcamentoResumo) {
         executarAcao(sucesso = { "Orçamento duplicado: ${textoNumero(orcamento.numero)} virou ${it}" }) {
@@ -104,7 +104,7 @@ class OrcamentosViewModel(
         }
     }
 
-    // ───────────────────────────── Erros ─────────────────────────────
+    // --- Erros ---
 
     private fun traduzirErroCarga(e: Throwable): String =
         "Não foi possível carregar seus orçamentos. Verifique a conexão " +

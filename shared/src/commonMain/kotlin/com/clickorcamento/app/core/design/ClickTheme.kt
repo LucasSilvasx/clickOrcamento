@@ -39,7 +39,7 @@ fun ClickTheme(content: @Composable () -> Unit) {
     val alternar: () -> Unit = {
         // Alterna a partir do que está valendo AGORA, não da preferência.
         // Assim, se está em SISTEMA e o sistema é claro, o primeiro
-        // clique leva pro escuro — que é o que o usuário espera.
+        // clique leva para o escuro, que é o que o usuário espera.
         preferencia = if (usarEscuro) PreferenciaTema.CLARO else PreferenciaTema.ESCURO
     }
 

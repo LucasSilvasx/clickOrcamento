@@ -3,16 +3,12 @@ package com.clickorcamento.app.navigation
 import kotlinx.serialization.Serializable
 
 /**
- * Rotas do app logado. Pense nelas como os "endereços" das telas.
- *
- * No Android puro você provavelmente usava strings ("orcamentos/{id}").
- * Aqui cada rota é um `object` (ou `data class`, quando carrega argumento)
- * marcado com @Serializable: o compilador checa os tipos e some o risco de
- * errar uma string. Quando o editor precisar de argumento, vira, por ex.:
- * `data class Editor(val orcamentoId: String? = null)`.
+ * Rotas tipadas do app logado: cada rota é um `object` (ou `data class`,
+ * quando carrega argumento) marcado com @Serializable, e o compilador confere
+ * os tipos no lugar de strings como "orcamentos/{id}".
  */
 /**
- * Área Orçamentos. Agora é um "grafo": uma pasta que agrupa a lista e o editor.
+ * Área Orçamentos. É um grafo aninhado que agrupa a lista e o editor.
  * Por isso a aba Orçamentos continua marcada enquanto o editor está aberto
  * (a casca pergunta "a tela atual está dentro de RotaOrcamentos?").
  */

@@ -22,9 +22,8 @@ import org.koin.compose.koinInject
 /**
  * Grafo de navegação do app logado.
  *
- * O NavHost é uma "moldura" que mostra uma tela por vez, conforme a rota
- * atual do `navController`. Quem decide entre Login e app continua sendo o
- * `sessionStatus` no App.kt — este NavHost só existe depois de autenticar.
+ * Só existe depois do login: quem decide entre Login e app é o
+ * `sessionStatus` no App.kt.
  *
  * A `CascaApp` desenha as abas/barra inferior em volta do NavHost.
  *
@@ -34,7 +33,6 @@ import org.koin.compose.koinInject
  */
 @Composable
 fun ClickNavHost() {
-    // O NavController guarda a pilha de telas (o "voltar").
     val navController = rememberNavController()
 
     // Observa a rota atual: quando muda, a casca recompõe e marca a aba certa.

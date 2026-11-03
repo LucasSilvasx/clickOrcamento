@@ -52,7 +52,7 @@ class LoginViewModel(
 
         _uiState.update { it.copy(carregando = true, erro = null, aviso = null) }
 
-        // viewModelScope cancela sozinho se a tela for destruída —
+        // viewModelScope cancela sozinho se a tela for destruída, o que
         // evita atualizar estado de algo que não existe mais.
         viewModelScope.launch {
             runCatching {
@@ -107,7 +107,7 @@ class LoginViewModel(
 
     /**
      * Valida o código digitado. Se estiver certo, o supabase-kt cria a sessão
-     * sozinho e o `sessionStatus` do App.kt troca para a Home — esta tela
+     * sozinho e o `sessionStatus` do App.kt troca para a Home; esta tela
      * não precisa navegar para lugar nenhum.
      */
     fun confirmarCodigo() {

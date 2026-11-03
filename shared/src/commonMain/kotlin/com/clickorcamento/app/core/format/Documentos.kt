@@ -50,7 +50,7 @@ fun mascarar(bruto: String, padrao: String): TextoMascarado {
     return TextoMascarado(texto.toString(), posicoes)
 }
 
-// ───────────── CPF / CNPJ ─────────────
+// --- CPF / CNPJ ---
 
 /**
  * Só dígitos e letras (A-Z), em maiúsculas. Letras porque o CNPJ passou a ser
@@ -91,7 +91,7 @@ fun rotuloCpfCnpj(texto: String): String {
     }
 }
 
-// ───────────── Telefone ─────────────
+// --- Telefone ---
 
 /** O que o campo guarda: só dígitos, no máximo 11 (DDD + celular com 9). */
 fun limparTelefone(texto: String): String = texto.filter { it.isDigit() }.take(11)

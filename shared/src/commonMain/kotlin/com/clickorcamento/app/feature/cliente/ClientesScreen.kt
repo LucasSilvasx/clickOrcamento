@@ -198,7 +198,7 @@ private fun ClientesConteudo(
     }
 }
 
-// ───────────────────────────── Lista ─────────────────────────────
+// --- Lista ---
 
 @Composable
 private fun ListaDeClientes(

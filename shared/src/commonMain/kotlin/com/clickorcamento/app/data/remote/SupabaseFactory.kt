@@ -6,17 +6,14 @@ import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest
 
 /**
- * O supabase-kt é modular: você instala só os pedaços que usa.
- * Instalamos:
+ * O supabase-kt é modular; instalamos só o que o app usa:
  *
- *   Auth      — login, sessão, e (o mais importante) é ele quem
- *               anexa o token JWT em toda requisição. Sem esse
- *               token o Postgres não sabe quem é você e o RLS
- *               não devolve linha nenhuma.
+ *   Auth:      login e sessão. É ele quem anexa o token JWT em toda
+ *              requisição; sem o token o RLS não devolve linha nenhuma.
  *
- *   Postgrest — o CRUD nas tabelas.
+ *   Postgrest: o CRUD nas tabelas.
  *
- * Nada de Storage ou Realtime por enquanto — cada módulo instalado
+ * Nada de Storage ou Realtime por enquanto: cada módulo instalado
  * é peso a mais no bundle do navegador.
  *
  * Quem decide quando criar (e garante que seja uma instância só) é o

@@ -50,7 +50,7 @@ class EditorOrcamentoViewModel(
         carregar()
     }
 
-    // ───────────────────────────── Carga ─────────────────────────────
+    // --- Carga ---
 
     fun carregar() {
         _uiState.update { it.copy(carregando = true, erroCarga = null) }
@@ -123,7 +123,7 @@ class EditorOrcamentoViewModel(
         valor = formatarValor(valorUnitarioCentavos)
     )
 
-    // ───────────────────────────── Campos ─────────────────────────────
+    // --- Campos ---
 
     /**
      * Toda edição passa por aqui: ignora mudanças enquanto salva (campos
@@ -161,7 +161,7 @@ class EditorOrcamentoViewModel(
     fun aoMudarPrazoPagamento(texto: String) = editar { it.copy(prazoPagamento = texto) }
     fun aoMudarObservacoes(texto: String) = editar { it.copy(observacoes = texto) }
 
-    // ───────────────────────────── Itens ─────────────────────────────
+    // --- Itens ---
 
     fun adicionarItem() = editar { it.copy(itens = it.itens + ItemForm(novaChave())) }
 
@@ -176,7 +176,7 @@ class EditorOrcamentoViewModel(
         estado.copy(itens = estado.itens.map { if (it.chave == novo.chave) novo else it })
     }
 
-    // ───────────────────────────── Cliente ─────────────────────────────
+    // --- Cliente ---
 
     fun abrirSeletorCliente() = editar { it.copy(seletorClienteAberto = true) }
 
@@ -232,7 +232,7 @@ class EditorOrcamentoViewModel(
         }
     }
 
-    // ───────────────────────────── Salvar ─────────────────────────────
+    // --- Salvar ---
 
     fun salvarRascunho() = salvar(gerarPdf = false)
 
@@ -401,7 +401,7 @@ class EditorOrcamentoViewModel(
         )
     }
 
-    // ───────────────────────────── Erros ─────────────────────────────
+    // --- Erros ---
 
     private fun traduzirErroCarga(e: Throwable): String =
         "Não foi possível carregar o orçamento. Verifique a conexão " +
