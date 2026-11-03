@@ -20,3 +20,6 @@ node_modules/
 
 # Configuração pessoal do Claude Code (caminhos da máquina do Lucas)
 .claude/settings.local.json
+
+# Contexto do Claude Code (fica só na máquina)
+CLAUDE.md
