@@ -1,0 +1,51 @@
+name: Publicar site
+
+on:
+  push:
+    branches: [main]
+    # Mudança só em README, Android ou desktop não altera o site.
+    paths:
+      - 'shared/**'
+      - 'webApp/**'
+      - 'gradle/**'
+      - 'gradle.properties'
+      - 'build.gradle.kts'
+      - 'settings.gradle.kts'
+      - 'kotlin-js-store/**'
+      - '.github/workflows/publicar-web.yml'
+  workflow_dispatch:
+
+# Dois pushes seguidos: o mais novo cancela o anterior, para o site antigo não sobrescrever o novo.
+concurrency:
+  group: publicar-web
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # Mesmo JDK de gradle/gradle-daemon-jvm.properties, para o Gradle não baixar outro.
+      - uses: actions/setup-java@v5
+        with:
+          distribution: zulu
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@v5
+
+      # O arquivo veio do Windows e está no git sem permissão de execução.
+      - run: chmod +x gradlew
+
+      - run: ./gradlew :webApp:wasmJsBrowserDistribution --console=plain
+
+      # O build roda aqui porque o ambiente da Vercel não traz JDK; ela só recebe os arquivos prontos.
+      - name: Enviar para a Vercel
+        run: npx --yes vercel@65.11.0 deploy webApp/build/dist/wasmJs/productionExecutable --prod --yes --token "$VERCEL_TOKEN"
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
