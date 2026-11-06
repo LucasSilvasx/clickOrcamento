@@ -6,9 +6,25 @@
 ![Compose Multiplatform](https://img.shields.io/badge/Compose_Multiplatform-1.12-4285F4?logo=jetpackcompose&logoColor=white)
 ![Supabase](https://img.shields.io/badge/Supabase-Postgres_%2B_RLS-3ECF8E?logo=supabase&logoColor=white)
 ![Plataformas](https://img.shields.io/badge/plataformas-Desktop%20·%20Android%20·%20Web-1F4E79)
-![Status](https://img.shields.io/badge/status-em%20desenvolvimento-orange)
+![Versão](https://img.shields.io/github/v/release/LucasSilvasx/clickOrcamento?label=vers%C3%A3o&color=1F4E79)
 
-> 🚧 **Em desenvolvimento.** O fluxo principal (empresas → clientes → orçamento → PDF) já funciona. Faltam acabamentos de conta (troca de senha, sessão salva) e a publicação dos instaladores. Veja o [roteiro](#-roteiro).
+O fluxo principal (empresas → clientes → orçamento → PDF) funciona nas três plataformas. O que ainda falta está no [roteiro](#-roteiro).
+
+## ⬇️ Experimente
+
+| Plataforma | Onde |
+|---|---|
+| 🌐 **Navegador** | [clickorcamento.vercel.app](https://clickorcamento.vercel.app), sem instalar nada |
+| 🪟 **Windows** (64 bits) | [Baixar `ClickOrcamento.msi`](https://github.com/LucasSilvasx/clickOrcamento/releases/latest/download/ClickOrcamento.msi) |
+| 🤖 **Android** 8.0 ou superior | [Baixar `ClickOrcamento.apk`](https://github.com/LucasSilvasx/clickOrcamento/releases/latest/download/ClickOrcamento.apk) |
+
+Os códigos SHA-256 de cada arquivo estão na [página da versão](https://github.com/LucasSilvasx/clickOrcamento/releases/latest).
+
+**Avisos que podem aparecer:**
+
+- **Windows:** o instalador não tem assinatura digital paga, então o SmartScreen pode mostrar "O Windows protegeu o computador". Para continuar: **Mais informações → Executar assim mesmo**.
+- **Android:** o app não vem da Play Store, então o aparelho pede permissão para instalar de fontes desconhecidas, e o Play Protect pode alertar.
+- **Cadastro:** o projeto usa o plano gratuito do Supabase, que limita os e-mails de confirmação por hora e pausa depois de alguns dias sem uso. Se o cadastro ou o login falhar, tente mais tarde.
 
 ---
 
@@ -26,22 +42,12 @@ O orçamento era feito numa planilha do Excel: **cada orçamento era uma cópia 
 | ✅ **Várias empresas por usuário** | Para quem presta serviço com mais de um CNPJ; uma marcada como padrão |
 | ✅ **Clientes** | Cadastro com máscara de CPF/CNPJ e telefone, busca |
 | ✅ **Orçamentos** | Lista com busca e filtro por status, duplicar, editor com itens, desconto e totais calculados |
-| ✅ **Numeração automática por empresa** | Gerada no banco, sem repetir nem pular |
+| ✅ **Numeração automática por empresa** | Gerada no banco, em sequência por empresa, sem conflito entre orçamentos criados ao mesmo tempo |
 | ✅ **PDF** | Gerador próprio em Kotlin puro; salvar (desktop), compartilhar (Android, inclusive WhatsApp) ou baixar (web) |
 | ✅ **Tema claro e escuro** | Material 3 |
 | ✅ **Layout responsivo** | Abas e tabelas no desktop; barra inferior e cartões no celular |
+| ✅ **Conta e privacidade** | Aceite dos termos no cadastro e exclusão da própria conta, com todos os dados |
 | 🔜 Troca e recuperação de senha, sessão salva ao fechar o app |
-| 🔜 Instalador `.msi` e `.apk` para download, versão web publicada |
-
-## 📸 Telas
-
-<!-- Coloque os prints em docs/prints/ e descomente:
-| Desktop | Celular |
-|---|---|
-| ![Editor](docs/prints/editor-desktop.png) | ![Lista](docs/prints/lista-celular.png) |
--->
-
-Prints das telas em breve.
 
 ## 🧱 Stack
 
@@ -87,7 +93,7 @@ flowchart LR
 
 ## ▶️ Como rodar
 
-**Requisitos:** JDK 17+ e Android SDK (para o alvo Android).
+**Requisitos:** JDK 21 e Android SDK (para o alvo Android).
 
 ```bash
 # Desktop
@@ -101,9 +107,15 @@ flowchart LR
 
 # Testes
 ./gradlew :shared:jvmTest
+
+# Instalador do Windows (sai em desktopApp/build/instalador/)
+./gradlew :desktopApp:gerarMsi
+
+# APK de release (sai em androidApp/build/outputs/apk/release/; sem keystore.properties, fica sem assinatura)
+./gradlew :androidApp:assembleRelease
 ```
 
-O app aponta para o projeto Supabase de desenvolvimento (`shared/.../data/remote/SupabaseConfig.kt`). A chave ali é a **publicável**, pública por definição: quem protege os dados é o RLS. As migrations ficam em [`supabase/migrations/`](supabase/migrations/).
+O app aponta para o mesmo projeto Supabase da versão publicada (`shared/.../data/remote/SupabaseConfig.kt`). A chave ali é a **publicável**, pública por definição: quem protege os dados é o RLS. As migrations mais recentes ficam em [`supabase/migrations/`](supabase/migrations/); o schema inicial ainda não está no repositório, então elas sozinhas não recriam o banco do zero.
 
 ## 📁 Estrutura
 
@@ -122,9 +134,9 @@ shared/src/commonMain/kotlin/com/clickorcamento/app/
 - [x] Login, cadastro e confirmação de e-mail
 - [x] Empresas, clientes, orçamentos e PDF
 - [x] Tema claro/escuro e layout responsivo
+- [x] Versão web publicada e instaladores (`.msi` / `.apk`) nos Releases
 - [ ] Troca e recuperação de senha
 - [ ] Sessão e preferência de tema salvas no dispositivo
-- [ ] Versão web publicada e instaladores (`.msi` / `.apk`) nos Releases
 - [ ] Envio do orçamento por e-mail
 
 ## 🤖 Como foi desenvolvido
