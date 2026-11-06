@@ -11,12 +11,7 @@ class CorPdf(rgb: Int) {
 }
 
 /**
- * Um escritor de PDF mínimo, em Kotlin puro (roda igual no desktop, Android e web).
- *
- * Cada folha guarda uma lista de comandos de desenho ("pinte um retângulo azul aqui", "escreva este texto
- * ali"). Esta classe junta as folhas e escreve o arquivo no formato que os
- * leitores entendem: objetos numerados + um índice (xref) dizendo em que byte
- * cada objeto começa.
+ * Escritor de PDF mínimo, em Kotlin puro: o mesmo resultado no desktop, no Android e na web.
  *
  * Só sabe o que o orçamento precisa: retângulo, linha e texto em Helvetica.
  * Tamanho A4, medidas em pontos (1 pt = 1/72 polegada; A4 = 595 x 842 pt).

@@ -1,8 +1,8 @@
--- Numeração dos orçamentos passa a ser POR EMPRESA (prestador), não por usuário.
+-- Numeração dos orçamentos passa a ser por empresa (prestador), não por usuário.
 --   Empresa nova            -> o primeiro orçamento é o nº 1.
 --   Empresa que já emitiu   -> continua do maior número dela + 1.
--- Substitui o "número inicial por usuário" (configuracao_usuario), que fica
--- sem uso: a empresa do Lucas já tem o nº 15, então a sequência segue no 16.
+-- Substitui o "número inicial por usuário" (configuracao_usuario), que fica sem uso:
+-- quem já tem orçamentos continua a sequência pelo maior número da própria empresa.
 
 -- 1) Unicidade por empresa (antes era por usuário).
 --    O índice único (prestador_id, numero) também atende o max() do trigger e

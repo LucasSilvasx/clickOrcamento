@@ -25,37 +25,31 @@ private val configuracaoKoin = koinConfiguration { modules(appModule) }
 /** [temaManual]: o Android passa false para seguir o tema do aparelho, sem botão de alternar. */
 @Composable
 fun App(temaManual: Boolean = true) {
-    // KoinApplication sobe o container do Koin junto com a UI. É a forma
-    // multiplataforma: o mesmo código serve para Desktop, Android e Web,
-    // sem precisar de startKoin() em cada MainActivity/main().
+    // Dentro da composição para que os três alvos não precisem de um startKoin() próprio.
     KoinApplication(configuracaoKoin) {
         ClickTheme(temaManual = temaManual) {
             val supabase = koinInject<SupabaseClient>()
 
-            // sessionStatus é um StateFlow que o supabase-kt mantém
-            // atualizado. Fazendo a raiz do app reagir a ele, o login e o
-            // logout trocam de tela sozinhos, e nenhuma tela precisa
-            // "navegar" manualmente depois de autenticar.
+            // Login e logout trocam de tela por aqui: nenhuma tela navega depois de autenticar.
             val sessao by supabase.auth.sessionStatus.collectAsState()
 
             // O cache guarda dados já filtrados pelo RLS: sem esta limpeza, outra conta
-            // entrando no mesmo app veria as listas da anterior.
+            // entrando no mesmo app veria as listas da anterior. Limpa também ao voltar de
+            // RefreshFailure, porque sem token válido o RLS devolve listas vazias.
             val cache = koinInject<CacheLeituras>()
             val logado = sessao is SessionStatus.Authenticated
-            LaunchedEffect(logado) {
-                if (!logado) cache.limpar()
-            }
+            LaunchedEffect(logado) { cache.limpar() }
 
             Surface(
                 modifier = Modifier.fillMaxSize(),
                 color = MaterialTheme.colorScheme.background
             ) {
                 when (sessao) {
-                    // Initializing: o cliente ainda está verificando se
-                    // existe sessão salva. Mostrar login aqui faria a tela
-                    // piscar pra quem já estava logado.
+                    // Mostrar o login aqui faria a tela piscar para quem já tem sessão salva.
                     is SessionStatus.Initializing -> TelaCarregando()
-                    is SessionStatus.Authenticated -> ClickNavHost()
+                    // RefreshFailure é falha de rede ou de servidor, não logout: a biblioteca segue
+                    // tentando renovar. Ir para o login descartaria o orçamento em edição.
+                    is SessionStatus.Authenticated, is SessionStatus.RefreshFailure -> ClickNavHost()
                     else -> LoginScreen()
                 }
             }

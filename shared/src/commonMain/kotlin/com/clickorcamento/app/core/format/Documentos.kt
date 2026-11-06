@@ -54,7 +54,7 @@ fun mascarar(bruto: String, padrao: String): TextoMascarado {
 
 /**
  * Só dígitos e letras (A-Z), em maiúsculas. Letras porque o CNPJ passou a ser
- * alfanumérico (Receita Federal, a partir de julho/2026: "12.ABC.345/01DE-35").
+ * alfanumérico (Receita Federal: "12.ABC.345/01DE-35").
  */
 private fun miolo(texto: String): String =
     texto.filter { it in '0'..'9' || it in 'A'..'Z' || it in 'a'..'z' }.uppercase()

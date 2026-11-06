@@ -2,12 +2,6 @@ package com.clickorcamento.app.feature.auth
 
 enum class ModoAuth { ENTRAR, CADASTRAR }
 
-/**
- * Todo o estado da tela num objeto só. Com estado espalhado em vários
- * StateFlow, a tela pode recompor num instante onde "email já mudou mas
- * erro ainda não", um estado inconsistente. Um objeto único sempre
- * representa um momento coerente.
- */
 data class LoginUiState(
     val modo: ModoAuth = ModoAuth.ENTRAR,
     val email: String = "",
@@ -26,7 +20,6 @@ data class LoginUiState(
      */
     val aguardandoConfirmacao: Boolean = false
 ) {
-    // Validação mora aqui, não na tela. A tela só lê o resultado.
     private val emailValido: Boolean
         get() = email.contains("@") && email.contains(".") && email.length > 5
 
@@ -39,7 +32,6 @@ data class LoginUiState(
     private val termosValidos: Boolean
         get() = modo == ModoAuth.ENTRAR || aceitouTermos
 
-    /** Regra do botão principal. Fica aqui pra não duplicar na UI. */
     val podeEnviar: Boolean
         get() = !carregando && emailValido && senhaValida && confirmacaoValida && termosValidos
 

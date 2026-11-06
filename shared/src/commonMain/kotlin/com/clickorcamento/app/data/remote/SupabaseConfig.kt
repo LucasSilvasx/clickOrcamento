@@ -1,14 +1,9 @@
 package com.clickorcamento.app.data.remote
 
 /**
- * Chave publicável do projeto. Pode ir pro Git sem problema.
- *
- * Ela não é segredo: vai dentro do app instalado e dentro do bundle
- * do navegador, onde qualquer um consegue ler. O que impede alguém
- * de ver seus dados com ela é o Row Level Security no banco.
- *
- * A chave que NUNCA pode aparecer aqui é a secreta (sb_secret_...),
- * que ignora RLS. Ela nunca sai do servidor.
+ * A chave publicável não é segredo: vai dentro do app instalado e do bundle do navegador.
+ * Quem protege os dados é o Row Level Security. A chave secreta ignora o RLS e não pode
+ * aparecer no cliente.
  */
 object SupabaseConfig {
     const val URL = "https://ksbkcqohqjqwmelvepli.supabase.co"

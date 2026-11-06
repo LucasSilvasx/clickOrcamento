@@ -55,17 +55,37 @@ fun lerCentavos(texto: String): Long? {
     return inteiro.ifEmpty { "0" }.toLong() * 100 + centavos
 }
 
-/** Quantidade aceita vírgula ou ponto: "1,5" e "1.5" valem 1,5. */
-fun lerQuantidade(texto: String): Double? =
-    texto.trim().replace(',', '.').toDoubleOrNull()
+/**
+ * Mesmo limite da coluna numeric(12,3). Sem esta conferência, toDoubleOrNull aceitaria "NaN"
+ * e "Infinity" (que derrubam o cálculo do total) e casas que o banco arredondaria sozinho.
+ */
+private val FormatoQuantidade = Regex("""\d{1,9}([.,]\d{0,3})?|[.,]\d{1,3}""")
 
-/** 2.0 -> "2"; 1.5 -> "1,5"; 0.125 -> "0,125". */
-fun formatarQuantidade(quantidade: Double): String {
-    if (quantidade == quantidade.toLong().toDouble()) return quantidade.toLong().toString()
-    val arredondada = (quantidade * 1000).roundToLong() / 1000.0
-    return arredondada.toString().replace('.', ',')
+/** Quantidade aceita vírgula ou ponto: "1,5" e "1.5" valem 1,5. */
+fun lerQuantidade(texto: String): Double? {
+    val limpo = texto.trim()
+    if (!FormatoQuantidade.matches(limpo)) return null
+    return limpo.replace(',', '.').toDoubleOrNull()
 }
 
-/** Total de uma linha: quantidade x valor unitário, arredondado ao centavo. */
-fun totalDaLinha(quantidade: Double, valorUnitarioCentavos: Long): Long =
-    (quantidade * valorUnitarioCentavos).roundToLong()
+/**
+ * 2.0 -> "2"; 1.5 -> "1,5"; 0.125 -> "0,125". Em milésimos inteiros porque `Double.toString()`
+ * muda entre plataformas e passa para notação científica em valores altos.
+ */
+fun formatarQuantidade(quantidade: Double): String {
+    val milesimos = (quantidade * 1000).roundToLong()
+    val fracao = (milesimos % 1000).toString().padStart(3, '0').trimEnd('0')
+    val inteiro = milesimos / 1000
+    return if (fracao.isEmpty()) "$inteiro" else "$inteiro,$fracao"
+}
+
+/**
+ * Total de uma linha: quantidade x valor unitário, arredondado ao centavo. Em inteiros para
+ * coincidir com a view orcamento_resumo, que calcula em numeric: em Double, 0,285 x 100 dá
+ * 28,4999... e o editor e o PDF mostrariam um centavo a menos que a lista.
+ */
+fun totalDaLinha(quantidade: Double, valorUnitarioCentavos: Long): Long {
+    val milesimos = (quantidade * 1000).roundToLong()
+    return (milesimos / 1000) * valorUnitarioCentavos +
+        ((milesimos % 1000) * valorUnitarioCentavos + 500) / 1000
+}

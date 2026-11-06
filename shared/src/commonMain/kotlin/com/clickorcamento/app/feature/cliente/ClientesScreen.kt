@@ -136,8 +136,7 @@ private fun ClientesConteudo(
                 }
                 Box(Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState())) {
                     if (form != null) {
-                        // Cartão do detalhe: surface com borda fina e cantos 12.dp;
-                        // largura limitada, formulário simples não estica.
+                        // Largura limitada: formulário simples não estica.
                         Box(
                             Modifier
                                 .fillMaxWidth()

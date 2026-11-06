@@ -10,7 +10,7 @@ data class ClientesUiState(
     val clientes: List<Cliente> = emptyList(),
     /** Resumo dos orçamentos, só para contar e listar os últimos de cada cliente. */
     val orcamentos: List<OrcamentoResumo> = emptyList(),
-    /** Falha ao CARREGAR a lista. */
+    /** Falha ao carregar a lista. */
     val erro: String? = null,
     val busca: String = "",
     /** Formulário aberto (criar/editar). `null` = nenhum. No desktop é o painel da direita. */

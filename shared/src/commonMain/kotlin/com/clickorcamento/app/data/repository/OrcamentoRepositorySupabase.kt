@@ -16,6 +16,8 @@ import com.clickorcamento.app.domain.repository.OrcamentoRepository
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Order
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
@@ -59,7 +61,9 @@ class OrcamentoRepositorySupabase(
         } catch (e: Throwable) {
             // Sem isto, uma falha nos itens deixaria um orçamento vazio no banco e
             // o "tentar de novo" do usuário criaria um segundo. Desfaz e repassa o erro.
-            runCatching { excluir(criado.id) }
+            // NonCancellable: sair da tela durante a gravação também cai aqui, e uma
+            // chamada suspend numa coroutine cancelada falharia sem desfazer nada.
+            withContext(NonCancellable) { runCatching { excluir(criado.id) } }
             throw e
         }
         OrcamentoCriado(id = criado.id, numero = criado.numero)

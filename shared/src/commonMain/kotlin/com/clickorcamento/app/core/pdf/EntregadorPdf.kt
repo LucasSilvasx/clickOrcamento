@@ -21,7 +21,7 @@ interface EntregadorPdf {
 /**
  * É `@Composable` porque o Android precisa do `Context` da tela para abrir a
  * folha de compartilhamento, e quem tem o `Context` é a composição
- * (`LocalContext`). Mesma ideia do `rememberLauncherForActivityResult`.
+ * (`LocalContext`).
  */
 @Composable
 expect fun rememberEntregadorPdf(): EntregadorPdf

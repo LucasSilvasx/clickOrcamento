@@ -20,9 +20,8 @@ dependencies {
     debugImplementation(libs.compose.uiTooling)
 }
 
-// Dados da assinatura ficam em keystore.properties, que NÃO vai para o Git.
-// Se o arquivo não existir (ex.: quem clonou o repositório), o build
-// release simplesmente sai sem assinatura em vez de quebrar.
+// Os dados da assinatura ficam em keystore.properties, fora do Git. Sem o arquivo (quem
+// clonou o repositório), o build release sai sem assinatura em vez de quebrar.
 val keystoreProps = Properties().apply {
     val f = rootProject.file("keystore.properties")
     if (f.exists()) f.inputStream().use { load(it) }

@@ -2,6 +2,7 @@ package com.clickorcamento.app.feature.orcamento.lista
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.clickorcamento.app.core.erro.tentar
 import com.clickorcamento.app.domain.model.OrcamentoResumo
 import com.clickorcamento.app.domain.model.StatusOrcamento
 import com.clickorcamento.app.domain.repository.OrcamentoRepository
@@ -12,6 +13,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
+private const val MensagemErroCarga =
+    "Não foi possível carregar seus orçamentos. Verifique a conexão e tente de novo."
+private const val MensagemErroAcao =
+    "Não foi possível concluir a ação. Verifique a conexão e tente de novo."
 
 class OrcamentosViewModel(
     private val orcamentos: OrcamentoRepository,
@@ -28,16 +34,16 @@ class OrcamentosViewModel(
         _uiState.update { it.copy(carregando = true, erro = null) }
 
         viewModelScope.launch {
-            runCatching { orcamentos.listarResumos() }
+            tentar { orcamentos.listarResumos() }
                 .onSuccess { lista ->
                     // Só enfeita a lista (mostrar ou não o nome da empresa); se falhar, segue com 1.
-                    val empresas = runCatching { prestadores.listar().size }.getOrDefault(1)
+                    val empresas = tentar { prestadores.listar().size }.getOrDefault(1)
                     _uiState.update {
                         it.copy(carregando = false, orcamentos = lista, quantidadeEmpresas = empresas)
                     }
                 }
-                .onFailure { e ->
-                    _uiState.update { it.copy(carregando = false, erro = traduzirErroCarga(e)) }
+                .onFailure {
+                    _uiState.update { it.copy(carregando = false, erro = MensagemErroCarga) }
                 }
         }
     }
@@ -93,23 +99,14 @@ class OrcamentosViewModel(
         _uiState.update { it.copy(ocupado = true, erroAcao = null, aviso = null) }
 
         viewModelScope.launch {
-            runCatching { acao() }
+            tentar { acao() }
                 .onSuccess { resultado ->
                     _uiState.update { it.copy(ocupado = false, aviso = sucesso(resultado)) }
                 }
-                .onFailure { e ->
-                    _uiState.update { it.copy(ocupado = false, erroAcao = traduzirErroAcao(e)) }
+                .onFailure {
+                    _uiState.update { it.copy(ocupado = false, erroAcao = MensagemErroAcao) }
                 }
             carregar()
         }
     }
-
-    // --- Erros ---
-
-    private fun traduzirErroCarga(e: Throwable): String =
-        "Não foi possível carregar seus orçamentos. Verifique a conexão " +
-            "(se o projeto ficou parado, o Supabase pode estar pausado). ${e.message.orEmpty()}"
-
-    private fun traduzirErroAcao(e: Throwable): String =
-        "Não foi possível concluir a ação. Verifique a conexão e tente de novo. ${e.message.orEmpty()}"
 }

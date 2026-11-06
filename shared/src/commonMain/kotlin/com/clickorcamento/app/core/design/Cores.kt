@@ -14,22 +14,18 @@ private val Azul100 = Color(0xFFDCE9F5)
 val EsquemaClaro = lightColorScheme(
     primary            = Azul700,
     onPrimary          = Color.White,
-    // "container" = versão suave da cor, para fundos de destaque
     primaryContainer   = Azul100,
     onPrimaryContainer = Azul900,
 
     background         = Color(0xFFFAFBFC),
     onBackground       = Color(0xFF1A1C1E),
 
-    // surface é o fundo de cartões, campos e barras
     surface            = Color.White,
     onSurface          = Color(0xFF1A1C1E),
     surfaceVariant     = Color(0xFFEFF1F4),
-    // onSurfaceVariant = texto secundário, rótulos, legendas
     onSurfaceVariant   = Color(0xFF5A6068),
 
     outline            = Color(0xFFC9CFD6),
-    // outlineVariant = bordas sutis, divisores
     outlineVariant     = Color(0xFFE4E7EB),
 
     error              = Color(0xFFBA1A1A),
@@ -40,7 +36,7 @@ val EsquemaClaro = lightColorScheme(
 
 val EsquemaEscuro = darkColorScheme(
     primary            = Azul300,
-    // Azul claro sobre azul claro não lê. No escuro, onPrimary inverte.
+    // No escuro o primary é claro, então o texto sobre ele precisa ser escuro.
     onPrimary          = Color(0xFF07243D),
     primaryContainer   = Color(0xFF1B3A56),
     onPrimaryContainer = Azul100,

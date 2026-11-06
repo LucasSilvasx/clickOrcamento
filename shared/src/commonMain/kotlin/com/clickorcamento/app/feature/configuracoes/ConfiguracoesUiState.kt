@@ -11,7 +11,7 @@ data class ConfiguracoesUiState(
     /** True na primeira carga e no "tentar de novo". */
     val carregando: Boolean = true,
     val empresas: List<Prestador> = emptyList(),
-    /** Falha ao CARREGAR a lista (esconde a lista e oferece "tentar de novo"). */
+    /** Falha ao carregar a lista (esconde a lista e oferece "tentar de novo"). */
     val erro: String? = null,
     /** E-mail da sessão atual, mostrado na seção Conta. */
     val emailUsuario: String = "",
@@ -21,7 +21,7 @@ data class ConfiguracoesUiState(
     val empresaParaExcluir: Prestador? = null,
     /** True enquanto "definir como padrão" ou "excluir" estão em andamento. */
     val ocupado: Boolean = false,
-    /** Falha numa AÇÃO (padrão/excluir): aparece sobre a lista, que continua visível. */
+    /** Falha numa ação (padrão/excluir): aparece sobre a lista, que continua visível. */
     val erroAcao: String? = null,
     /** Confirmação discreta da última ação ("Empresa salva"). */
     val aviso: String? = null,

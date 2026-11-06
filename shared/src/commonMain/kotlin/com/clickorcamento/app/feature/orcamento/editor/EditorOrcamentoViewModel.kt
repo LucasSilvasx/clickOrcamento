@@ -2,6 +2,7 @@ package com.clickorcamento.app.feature.orcamento.editor
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.clickorcamento.app.core.erro.tentar
 import com.clickorcamento.app.core.format.formatarQuantidade
 import com.clickorcamento.app.core.format.formatarValor
 import com.clickorcamento.app.core.format.formatarBr
@@ -28,6 +29,14 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
+private const val MensagemErroCarga =
+    "Não foi possível carregar o orçamento. Verifique a conexão e tente de novo."
+private const val MensagemErroSalvar =
+    "Não foi possível salvar o orçamento. Verifique a conexão e tente de novo."
+
+/** Acima disso a soma estoura o bigint da view orcamento_resumo e a lista inteira deixa de carregar. */
+private const val TotalMaximoCentavos = 1e15
 
 /**
  * @param orcamentoId `null` abre um orçamento novo; com id, abre esse orçamento para editar.
@@ -56,15 +65,15 @@ class EditorOrcamentoViewModel(
         _uiState.update { it.copy(carregando = true, erroCarga = null) }
 
         viewModelScope.launch {
-            runCatching {
+            tentar {
                 val empresas = prestadores.listar()
                 val lista = clientes.listar()
                 val existente = _uiState.value.id?.let { orcamentos.buscar(it) }
                 Triple(empresas, lista, existente)
             }.onSuccess { (empresas, lista, existente) ->
                 _uiState.update { montarEstado(it, empresas, lista, existente) }
-            }.onFailure { e ->
-                _uiState.update { it.copy(carregando = false, erroCarga = traduzirErroCarga(e)) }
+            }.onFailure {
+                _uiState.update { it.copy(carregando = false, erroCarga = MensagemErroCarga) }
             }
         }
     }
@@ -208,7 +217,7 @@ class EditorOrcamentoViewModel(
         _uiState.update { it.copy(novoCliente = form.copy(salvando = true, erro = null)) }
 
         viewModelScope.launch {
-            runCatching { clientes.criar(form.paraDados()) }
+            tentar { clientes.criar(form.paraDados()) }
                 .onSuccess { criado ->
                     _uiState.update {
                         it.copy(
@@ -218,13 +227,12 @@ class EditorOrcamentoViewModel(
                         )
                     }
                 }
-                .onFailure { e ->
+                .onFailure {
                     _uiState.update {
                         it.copy(
                             novoCliente = form.copy(
                                 salvando = false,
-                                erro = "Não foi possível salvar o cliente. Verifique a conexão e tente de novo. " +
-                                    e.message.orEmpty()
+                                erro = "Não foi possível salvar o cliente. Verifique a conexão e tente de novo."
                             )
                         )
                     }
@@ -258,7 +266,7 @@ class EditorOrcamentoViewModel(
         _uiState.update { it.copy(salvando = true, gerandoPdf = gerarPdf, erro = null, aviso = null) }
 
         viewModelScope.launch {
-            val salvo = runCatching {
+            val salvo = tentar {
                 val idAtual = estado.id
                 if (idAtual == null) {
                     val criado = orcamentos.criar(dados)
@@ -266,9 +274,9 @@ class EditorOrcamentoViewModel(
                 } else {
                     idAtual to orcamentos.atualizar(idAtual, dados)
                 }
-            }.getOrElse { e ->
+            }.getOrElse {
                 // Tudo que o usuário digitou continua na tela.
-                _uiState.update { it.copy(salvando = false, gerandoPdf = false, erro = traduzirErroSalvar(e)) }
+                _uiState.update { it.copy(salvando = false, gerandoPdf = false, erro = MensagemErroSalvar) }
                 return@launch
             }
             val (id, numero) = salvo
@@ -278,20 +286,20 @@ class EditorOrcamentoViewModel(
                 return@launch
             }
 
-            runCatching { montarPdf(numero, dados, estado) }
+            tentar { montarPdf(numero, dados, estado) }
                 .onSuccess { pdf ->
                     _uiState.update {
                         it.copy(salvando = false, gerandoPdf = false, id = id, numero = numero, pdfParaEntregar = pdf)
                     }
                 }
-                .onFailure { e ->
+                .onFailure {
                     _uiState.update {
                         it.copy(
                             salvando = false,
                             gerandoPdf = false,
                             id = id,
                             numero = numero,
-                            erro = "Orçamento salvo, mas não foi possível gerar o PDF. ${e.message.orEmpty()}"
+                            erro = "Orçamento salvo, mas não foi possível gerar o PDF. Tente de novo."
                         )
                     }
                 }
@@ -318,9 +326,13 @@ class EditorOrcamentoViewModel(
         if (mensagem != null) marcarComoEmitido()
     }
 
-    fun aoFalharEntregaPdf(e: Throwable) {
+    fun aoFalharEntregaPdf() {
         _uiState.update {
-            it.copy(pdfParaEntregar = null, erro = "Orçamento salvo, mas não foi possível salvar o PDF. ${e.message.orEmpty()}")
+            it.copy(
+                pdfParaEntregar = null,
+                erro = "Orçamento salvo, mas não foi possível salvar o PDF. " +
+                    "Confira se o arquivo não está aberto em outro programa e tente de novo."
+            )
         }
     }
 
@@ -331,7 +343,7 @@ class EditorOrcamentoViewModel(
         if (estado.status != StatusOrcamento.RASCUNHO) return
 
         viewModelScope.launch {
-            runCatching { orcamentos.atualizarStatus(id, StatusOrcamento.EMITIDO) }
+            tentar { orcamentos.atualizarStatus(id, StatusOrcamento.EMITIDO) }
                 .onSuccess { _uiState.update { it.copy(status = StatusOrcamento.EMITIDO) } }
                 .onFailure {
                     _uiState.update {
@@ -368,7 +380,7 @@ class EditorOrcamentoViewModel(
             }
             val quantidade = lerQuantidade(item.quantidade)
             if (quantidade == null || quantidade <= 0.0) {
-                return Validacao.Erro("Item $numero: informe uma quantidade maior que zero.")
+                return Validacao.Erro("Item $numero: informe uma quantidade maior que zero, com até 3 casas decimais.")
             }
             val valor = if (item.valor.isBlank()) 0L else lerCentavos(item.valor)
                 ?: return Validacao.Erro("Item $numero: valor inválido. Exemplo: 1.100,00")
@@ -378,6 +390,10 @@ class EditorOrcamentoViewModel(
                 unidade = item.unidade.trim().ifEmpty { "un" },
                 valorUnitarioCentavos = valor
             )
+        }
+
+        if (itens.sumOf { it.quantidade * it.valorUnitarioCentavos } > TotalMaximoCentavos) {
+            return Validacao.Erro("O total está acima do limite permitido. Confira as quantidades e os valores.")
         }
 
         val desconto = if (estado.desconto.isBlank()) 0L else lerCentavos(estado.desconto)
@@ -400,13 +416,4 @@ class EditorOrcamentoViewModel(
             )
         )
     }
-
-    // --- Erros ---
-
-    private fun traduzirErroCarga(e: Throwable): String =
-        "Não foi possível carregar o orçamento. Verifique a conexão " +
-            "(se o projeto ficou parado, o Supabase pode estar pausado). ${e.message.orEmpty()}"
-
-    private fun traduzirErroSalvar(e: Throwable): String =
-        "Não foi possível salvar o orçamento. Verifique a conexão e tente de novo. ${e.message.orEmpty()}"
 }

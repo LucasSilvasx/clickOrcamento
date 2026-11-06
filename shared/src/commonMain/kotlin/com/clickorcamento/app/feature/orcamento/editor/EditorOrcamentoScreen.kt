@@ -64,6 +64,7 @@ import com.clickorcamento.app.core.design.Carregando
 import com.clickorcamento.app.core.design.ConviteVazio
 import com.clickorcamento.app.core.design.ErroComRetentativa
 import com.clickorcamento.app.core.design.LarguraMinimaDesktop
+import com.clickorcamento.app.core.erro.tentar
 import com.clickorcamento.app.core.format.formatarMoeda
 import com.clickorcamento.app.core.format.lerDataBr
 import com.clickorcamento.app.core.pdf.rememberEntregadorPdf
@@ -152,9 +153,9 @@ fun EditorOrcamentoScreen(
     val entregador = rememberEntregadorPdf()
     LaunchedEffect(state.pdfParaEntregar) {
         val pdf = state.pdfParaEntregar ?: return@LaunchedEffect
-        runCatching { entregador.entregar(pdf.nomeArquivo, pdf.bytes) }
+        tentar { entregador.entregar(pdf.nomeArquivo, pdf.bytes) }
             .onSuccess(viewModel::aoEntregarPdf)
-            .onFailure(viewModel::aoFalharEntregaPdf)
+            .onFailure { viewModel.aoFalharEntregaPdf() }
     }
 
     EditorConteudo(state, acoes)
@@ -220,7 +221,6 @@ private fun EditorDesktop(state: EditorOrcamentoUiState, acoes: AcoesEditor, tab
             Spacer(Modifier.height(16.dp))
 
             if (state.pronto) {
-                // Cartão: surface, borda fina, cantos 12.dp.
                 Surface(
                     shape = RoundedCornerShape(12.dp),
                     color = cores.surface,

@@ -5,8 +5,8 @@ import kotlin.test.Test
 import kotlin.test.assertTrue
 
 /**
- * Não verifica nada visual (isso é com os olhos): grava dois PDFs de exemplo em
- * `shared/build/pdf-exemplo/` para abrir e conferir o layout sem rodar o app.
+ * Grava dois PDFs de exemplo em `shared/build/pdf-exemplo/` para conferir o layout
+ * sem rodar o app. Não verifica nada visual.
  */
 class PdfExemploDesktopTest {
 

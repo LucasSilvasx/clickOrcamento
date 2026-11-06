@@ -45,7 +45,7 @@ class PdfPronto(val nomeArquivo: String, val bytes: ByteArray)
 /** Estado do editor de orçamento num objeto só. */
 data class EditorOrcamentoUiState(
     val carregando: Boolean = true,
-    /** Falha ao CARREGAR (empresas, clientes ou o orçamento aberto). */
+    /** Falha ao carregar (empresas, clientes ou o orçamento aberto). */
     val erroCarga: String? = null,
 
     /** `null` = orçamento novo, ainda não salvo. */

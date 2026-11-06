@@ -61,23 +61,18 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
 
-            // "platform(...)" marca esta dependência como uma bom: ela não
-            // traz código nenhum, só dita as versões das linhas seguintes.
-            // O "project.dependencies." na frente é necessário dentro de
-            // source sets de KMP (detalhe da API do Gradle).
+            // "project.dependencies." é exigido pelo Gradle dentro de source sets de KMP.
             implementation(project.dependencies.platform(libs.supabase.bom))
 
             // Sem versão, de propósito: quem decide é a bom acima.
             implementation(libs.supabase.auth)
             implementation(libs.supabase.postgrest)
 
-            // Koin: mesma lógica da bom do Supabase, versão decidida em um lugar só.
             implementation(project.dependencies.platform(libs.koin.bom))
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
 
-            // Navegação entre telas (pilha de telas + botão voltar).
             implementation(libs.navigation.compose)
         }
         commonTest.dependencies {

@@ -2,6 +2,7 @@ package com.clickorcamento.app.feature.cliente
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.clickorcamento.app.core.erro.tentar
 import com.clickorcamento.app.domain.model.Cliente
 import com.clickorcamento.app.domain.repository.ClienteRepository
 import com.clickorcamento.app.domain.repository.OrcamentoRepository
@@ -10,6 +11,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
+private const val MensagemErroCarga =
+    "Não foi possível carregar seus clientes. Verifique a conexão e tente de novo."
+private const val MensagemErroSalvar =
+    "Não foi possível salvar o cliente. Verifique a conexão e tente de novo."
 
 class ClientesViewModel(
     private val clientes: ClienteRepository,
@@ -27,17 +33,17 @@ class ClientesViewModel(
         _uiState.update { it.copy(carregando = true, erro = null) }
 
         viewModelScope.launch {
-            runCatching { clientes.listar() }
+            tentar { clientes.listar() }
                 .onSuccess { lista ->
                     // Os orçamentos só enfeitam a lista (contagem e "últimos orçamentos"):
                     // se falharem, a lista de clientes aparece do mesmo jeito.
-                    val resumos = runCatching { orcamentos.listarResumos() }.getOrDefault(emptyList())
+                    val resumos = tentar { orcamentos.listarResumos() }.getOrDefault(emptyList())
                     _uiState.update {
                         it.copy(carregando = false, clientes = lista, orcamentos = resumos)
                     }
                 }
-                .onFailure { e ->
-                    _uiState.update { it.copy(carregando = false, erro = traduzirErroCarga(e)) }
+                .onFailure {
+                    _uiState.update { it.copy(carregando = false, erro = MensagemErroCarga) }
                 }
         }
     }
@@ -74,7 +80,7 @@ class ClientesViewModel(
         _uiState.update { it.copy(formulario = form.copy(salvando = true, erro = null)) }
 
         viewModelScope.launch {
-            runCatching {
+            tentar {
                 if (form.id == null) {
                     clientes.criar(form.paraDados())
                 } else {
@@ -83,10 +89,10 @@ class ClientesViewModel(
             }.onSuccess {
                 _uiState.update { it.copy(formulario = null, aviso = "Cliente salvo") }
                 carregar()
-            }.onFailure { e ->
+            }.onFailure {
                 // O formulário continua aberto e preenchido: o usuário não perde o que digitou.
                 _uiState.update {
-                    it.copy(formulario = form.copy(salvando = false, erro = traduzirErroSalvar(e)))
+                    it.copy(formulario = form.copy(salvando = false, erro = MensagemErroSalvar))
                 }
             }
         }
@@ -113,7 +119,7 @@ class ClientesViewModel(
         }
 
         viewModelScope.launch {
-            runCatching { clientes.excluir(alvo.id) }
+            tentar { clientes.excluir(alvo.id) }
                 .onSuccess {
                     _uiState.update { it.copy(formulario = null, aviso = "Cliente excluído") }
                     carregar()
@@ -129,20 +135,13 @@ class ClientesViewModel(
 
     // --- Erros ---
 
-    private fun traduzirErroCarga(e: Throwable): String =
-        "Não foi possível carregar seus clientes. Verifique a conexão " +
-            "(se o projeto ficou parado, o Supabase pode estar pausado). ${e.message.orEmpty()}"
-
-    private fun traduzirErroSalvar(e: Throwable): String =
-        "Não foi possível salvar o cliente. Verifique a conexão e tente de novo. ${e.message.orEmpty()}"
-
     private fun traduzirErroExcluir(e: Throwable): String {
         val original = e.message.orEmpty()
         // 23503 = foreign_key_violation: o orçamento aponta para o cliente com ON DELETE RESTRICT.
         return if (original.contains("23503") || original.contains("foreign key", ignoreCase = true)) {
             "Este cliente tem orçamentos e não pode ser excluído."
         } else {
-            "Não foi possível excluir o cliente. Verifique a conexão e tente de novo. $original"
+            "Não foi possível excluir o cliente. Verifique a conexão e tente de novo."
         }
     }
 }

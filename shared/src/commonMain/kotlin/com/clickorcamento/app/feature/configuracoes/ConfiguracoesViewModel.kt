@@ -2,6 +2,7 @@ package com.clickorcamento.app.feature.configuracoes
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.clickorcamento.app.core.erro.tentar
 import com.clickorcamento.app.domain.model.Prestador
 import com.clickorcamento.app.domain.repository.PrestadorRepository
 import io.github.jan.supabase.SupabaseClient
@@ -13,6 +14,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
+private const val MensagemErroCarga =
+    "Não foi possível carregar suas empresas. Verifique a conexão e tente de novo."
+private const val MensagemErroSalvar =
+    "Não foi possível salvar a empresa. Verifique a conexão e tente de novo."
 
 /**
  * O repository traz as empresas; o SupabaseClient entra só para a seção Conta
@@ -35,15 +41,22 @@ class ConfiguracoesViewModel(
     }
 
     fun carregar() {
-        _uiState.update { it.copy(carregando = true, erro = null) }
+        // Relê o e-mail porque a tela pode nascer em RefreshFailure, quando ainda não há sessão ativa.
+        _uiState.update {
+            it.copy(
+                carregando = true,
+                erro = null,
+                emailUsuario = supabase.auth.currentUserOrNull()?.email ?: it.emailUsuario
+            )
+        }
 
         viewModelScope.launch {
-            runCatching { prestadores.listar() }
+            tentar { prestadores.listar() }
                 .onSuccess { lista ->
                     _uiState.update { it.copy(carregando = false, empresas = lista) }
                 }
-                .onFailure { e ->
-                    _uiState.update { it.copy(carregando = false, erro = traduzirErroCarga(e)) }
+                .onFailure {
+                    _uiState.update { it.copy(carregando = false, erro = MensagemErroCarga) }
                 }
         }
     }
@@ -85,7 +98,7 @@ class ConfiguracoesViewModel(
         _uiState.update { it.copy(formulario = form.copy(salvando = true, erro = null)) }
 
         viewModelScope.launch {
-            runCatching {
+            tentar {
                 if (form.id == null) {
                     prestadores.criar(form.paraDados(), padrao = primeira)
                 } else {
@@ -95,10 +108,10 @@ class ConfiguracoesViewModel(
                 // Fecha o formulário e relê a lista: o banco é a fonte da verdade.
                 _uiState.update { it.copy(formulario = null, aviso = "Empresa salva") }
                 carregar()
-            }.onFailure { e ->
+            }.onFailure {
                 // O formulário continua aberto e preenchido: o usuário não perde o que digitou.
                 _uiState.update {
-                    it.copy(formulario = form.copy(salvando = false, erro = traduzirErroSalvar(e)))
+                    it.copy(formulario = form.copy(salvando = false, erro = MensagemErroSalvar))
                 }
             }
         }
@@ -147,7 +160,7 @@ class ConfiguracoesViewModel(
         _uiState.update { it.copy(ocupado = true, erroAcao = null, aviso = null) }
 
         viewModelScope.launch {
-            runCatching { acao() }
+            tentar { acao() }
                 .onSuccess {
                     _uiState.update { it.copy(ocupado = false, aviso = avisoSucesso) }
                 }
@@ -160,15 +173,13 @@ class ConfiguracoesViewModel(
 
     // --- Conta ---
 
-    /**
-     * Encerra a sessão. Não navegamos para lugar nenhum: o `sessionStatus`
-     * do App.kt percebe o logout e troca para o Login sozinho.
-     */
+    /** O `sessionStatus` do App.kt percebe o logout e troca para o Login. */
     fun sair() {
         viewModelScope.launch {
-            // Se falhar, a sessão continua e a tela não muda: o usuário vê que
-            // nada aconteceu e toca de novo. Mensagem própria fica para depois.
-            runCatching { supabase.auth.signOut() }
+            // Sem rede o aviso ao servidor falha, mas a sessão deste aparelho precisa acabar:
+            // quem pede para sair pode estar num computador compartilhado.
+            tentar { supabase.auth.signOut() }
+                .onFailure { tentar { supabase.auth.clearSession() } }
         }
     }
 
@@ -195,17 +206,17 @@ class ConfiguracoesViewModel(
         _uiState.update { it.copy(excluindoConta = true, erroExclusaoConta = null) }
 
         viewModelScope.launch {
-            runCatching {
+            tentar {
                 supabase.postgrest.rpc("excluir_minha_conta")
                 // clearSession em vez de signOut: o usuário já não existe no servidor,
                 // então só falta apagar a sessão guardada neste aparelho.
                 supabase.auth.clearSession()
-            }.onFailure { e ->
+            }.onFailure {
                 _uiState.update {
                     it.copy(
                         excluindoConta = false,
                         erroExclusaoConta = "Não foi possível excluir a conta. Verifique a " +
-                            "conexão e tente de novo. ${e.message.orEmpty()}"
+                            "conexão e tente de novo."
                     )
                 }
             }
@@ -214,16 +225,6 @@ class ConfiguracoesViewModel(
 
     // --- Erros ---
 
-    private fun traduzirErroCarga(e: Throwable): String {
-        val original = e.message.orEmpty()
-        return "Não foi possível carregar suas empresas. Verifique a conexão " +
-            "(se o projeto ficou parado, o Supabase pode estar pausado). $original"
-    }
-
-    private fun traduzirErroSalvar(e: Throwable): String =
-        "Não foi possível salvar a empresa. Verifique a conexão e tente de novo. " +
-            e.message.orEmpty()
-
     private fun traduzirErroAcao(e: Throwable): String {
         val original = e.message.orEmpty()
         // 23503 = foreign_key_violation do Postgres: o orcamento aponta para
@@ -231,7 +232,7 @@ class ConfiguracoesViewModel(
         return if (original.contains("23503") || original.contains("foreign key", ignoreCase = true)) {
             "Esta empresa tem orçamentos e não pode ser excluída."
         } else {
-            "Não foi possível concluir a ação. Verifique a conexão e tente de novo. $original"
+            "Não foi possível concluir a ação. Verifique a conexão e tente de novo."
         }
     }
 }

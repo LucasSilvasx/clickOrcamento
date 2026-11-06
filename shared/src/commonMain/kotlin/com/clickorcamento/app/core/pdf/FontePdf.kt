@@ -3,16 +3,13 @@ package com.clickorcamento.app.core.pdf
 /**
  * As duas fontes do PDF: Helvetica e Helvetica-Bold.
  *
- * Por que Helvetica? Ela é uma das 14 "fontes padrão" do PDF: todo leitor
- * (Acrobat, Chrome, visualizador do Android) já tem as duas embutidas. Assim o
- * arquivo não precisa carregar a fonte dentro dele e fica com poucos KB.
+ * São duas das 14 fontes padrão do PDF, que todo leitor já traz embutidas: o arquivo não
+ * precisa carregar a fonte e fica com poucos KB.
  *
- * O preço disso: o PDF não sabe medir texto. Quem decide onde quebrar a linha
- * ou como alinhar um valor à direita somos nós, e para isso precisamos da
- * largura de cada letra. As tabelas abaixo saíram dos arquivos de métrica
- * oficiais da Adobe (Helvetica.afm / Helvetica-Bold.afm), já na ordem da
- * codificação WinAnsi (códigos 32 a 255). Unidade: milésimos do tamanho da
- * fonte (em corpo 10, uma letra de largura 556 ocupa 5,56 pt).
+ * Em contrapartida, quebrar linhas e alinhar valores à direita depende da largura de cada
+ * letra. As tabelas abaixo saíram dos arquivos de métrica oficiais da Adobe (Helvetica.afm
+ * e Helvetica-Bold.afm), na ordem da codificação WinAnsi (códigos 32 a 255). Unidade:
+ * milésimos do tamanho da fonte (em corpo 10, largura 556 ocupa 5,56 pt).
  */
 enum class FontePdf(internal val nomePdf: String, internal val recurso: String, private val larguras: IntArray) {
     REGULAR(

@@ -59,9 +59,8 @@ private const val CorpoTexto = 9.0
 private const val AlturaLinhaTexto = 12.0
 
 /**
- * Desenha o orçamento de cima para baixo, como quem preenche uma folha:
- * [y] é a "caneta", a altura onde o próximo bloco começa. Quando um bloco
- * não cabe mais, [garantirEspaco] vira a folha.
+ * Desenha o orçamento de cima para baixo: [y] é a altura onde o próximo bloco começa.
+ * Quando um bloco não cabe mais, [garantirEspaco] começa outra folha.
  */
 private class LayoutOrcamento(
     private val numero: Int,
@@ -304,7 +303,7 @@ private class LayoutOrcamento(
         y += 22
     }
 
-    /** "Rótulo: valor" numa linha só (corta com "…" se não couber). Não move a caneta. */
+    /** "Rótulo: valor" numa linha só (corta com "…" se não couber). Não altera [y]. */
     private fun campo(x: Double, rotulo: String, valor: String, larguraMaxima: Double) {
         val textoRotulo = "$rotulo: "
         val larguraRotulo = FontePdf.NEGRITO.largura(textoRotulo, CorpoTexto)
@@ -339,8 +338,8 @@ private class LayoutOrcamento(
     }
 
     /**
-     * A caneta ainda está no topo de uma folha de continuação. Serve para não
-     * virar a página à toa (e em loop) se um bloco for maior que a folha inteira.
+     * [y] ainda está no topo de uma folha de continuação. Evita abrir folhas em loop
+     * se um bloco for maior que a folha inteira.
      */
     private fun paginaVazia() = documento.totalPaginas > 1 && y <= 60.0 + 22.0
 

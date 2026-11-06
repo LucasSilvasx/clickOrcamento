@@ -2,11 +2,15 @@ package com.clickorcamento.app.feature.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.clickorcamento.app.core.erro.tentar
 import com.clickorcamento.app.core.legal.DocumentosLegais
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.OtpType
+import io.github.jan.supabase.auth.exception.AuthErrorCode
+import io.github.jan.supabase.auth.exception.AuthRestException
 import io.github.jan.supabase.auth.providers.builtin.Email
+import io.github.jan.supabase.exceptions.RestException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,10 +19,6 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-/**
- * O cliente é injetado pelo Koin (ver di/AppModule.kt). Como ele chega
- * pelo construtor, dá pra testar este ViewModel com um cliente falso.
- */
 class LoginViewModel(
     private val cliente: SupabaseClient
 ) : ViewModel() {
@@ -26,8 +26,7 @@ class LoginViewModel(
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
-    // Ao digitar, limpamos erro e aviso: mensagem antiga ao lado de
-    // um campo que o usuário já corrigiu é confuso.
+    // Ao digitar, limpa erro e aviso: já não descrevem o que está no campo.
     fun aoMudarEmail(valor: String) =
         _uiState.update { it.copy(email = valor.trim(), erro = null, aviso = null) }
 
@@ -59,16 +58,14 @@ class LoginViewModel(
 
         _uiState.update { it.copy(carregando = true, erro = null, aviso = null) }
 
-        // viewModelScope cancela sozinho se a tela for destruída, o que
-        // evita atualizar estado de algo que não existe mais.
         viewModelScope.launch {
-            runCatching {
+            tentar {
                 if (estado.modo == ModoAuth.ENTRAR) {
                     cliente.auth.signInWith(Email) {
                         email = estado.email
                         password = estado.senha
                     }
-                    null  // sucesso no login não gera aviso: a tela troca sozinha
+                    null // sucesso no login não gera aviso: a tela troca sozinha
                 } else {
                     cliente.auth.signUpWith(Email) {
                         email = estado.email
@@ -79,24 +76,26 @@ class LoginViewModel(
                     "Enviamos um e-mail de confirmação para ${estado.email}."
                 }
             }.onSuccess { mensagem ->
-                _uiState.update {
-                    it.copy(
-                        carregando = false,
-                        aviso = mensagem,
-                        // Cadastro feito: a tela passa a orientar a confirmação por e-mail.
-                        // Voltamos o modo para ENTRAR para que, se o usuário
-                        // desistir da confirmação, caia no login normal.
-                        aguardandoConfirmacao = mensagem != null,
-                        modo = if (mensagem != null) ModoAuth.ENTRAR else it.modo,
-                        // A senha fica na memória durante a etapa de confirmação:
-                        // é ela que usamos no "Já confirmei, entrar". Sai em voltarParaLogin().
-                        confirmacaoSenha = ""
-                    )
+                if (mensagem == null) {
+                    limparFormulario()
+                } else {
+                    _uiState.update {
+                        it.copy(
+                            carregando = false,
+                            aviso = mensagem,
+                            aguardandoConfirmacao = true,
+                            // Quem desistir da confirmação cai no login normal.
+                            modo = ModoAuth.ENTRAR,
+                            // A senha fica na memória durante a etapa de confirmação: é a usada
+                            // no "Já confirmei, entrar". Sai em voltarParaLogin().
+                            confirmacaoSenha = ""
+                        )
+                    }
                 }
             }.onFailure { e ->
-                // Conta criada antes, mas nunca confirmada: em vez de só dar
-                // erro, levamos o usuário para a etapa de confirmação e pedimos um novo e-mail.
-                if (e.message.orEmpty().contains("Email not confirmed", true)) {
+                // Conta criada antes e nunca confirmada: em vez de só dar erro, leva para a
+                // etapa de confirmação e pede um novo e-mail.
+                if ((e as? AuthRestException)?.errorCode == AuthErrorCode.EmailNotConfirmed) {
                     _uiState.update {
                         it.copy(carregando = false, aguardandoConfirmacao = true)
                     }
@@ -115,7 +114,7 @@ class LoginViewModel(
         _uiState.update { it.copy(carregando = true, erro = null, aviso = null) }
 
         viewModelScope.launch {
-            runCatching {
+            tentar {
                 cliente.auth.resendEmail(OtpType.Email.SIGNUP, email)
             }.onSuccess {
                 _uiState.update {
@@ -139,13 +138,13 @@ class LoginViewModel(
         _uiState.update { it.copy(carregando = true, erro = null, aviso = null) }
 
         viewModelScope.launch {
-            runCatching {
+            tentar {
                 cliente.auth.signInWith(Email) {
                     email = estado.email
                     password = estado.senha
                 }
             }.onSuccess {
-                _uiState.update { it.copy(carregando = false) }
+                limparFormulario()
             }.onFailure { e ->
                 _uiState.update { it.copy(carregando = false, erro = traduzirErro(e)) }
             }
@@ -158,27 +157,27 @@ class LoginViewModel(
     }
 
     /**
-     * O Supabase devolve mensagens em inglês e técnicas.
-     * Traduzimos as mais comuns; o resto passa direto pra não
-     * esconder informação de diagnóstico.
+     * Este ViewModel sobrevive ao logout, porque fica na raiz do app. Sem zerar o estado depois
+     * de entrar, a senha continuaria preenchida para quem usar o aparelho em seguida.
      */
-    private fun traduzirErro(e: Throwable): String {
-        val original = e.message.orEmpty()
-        return when {
-            original.contains("Invalid login credentials", true) ->
-                "E-mail ou senha incorretos."
-            original.contains("Email not confirmed", true) ->
-                "E-mail ainda não confirmado. Verifique sua caixa de entrada."
-            original.contains("User already registered", true) ->
-                "Já existe uma conta com esse e-mail."
-            original.contains("weak", true) || original.contains("password", true) ->
-                "Senha muito fraca. Use pelo menos 6 caracteres."
-            original.contains("rate limit", true) ||
-                original.contains("only request this after", true) ->
-                "Muitas tentativas. Aguarde cerca de um minuto."
-            original.contains("expired", true) || original.contains("invalid", true) ->
-                "Dados inválidos ou expirados. Confira o e-mail e tente novamente."
-            else -> "Não foi possível conectar. $original"
-        }
+    private fun limparFormulario() {
+        _uiState.value = LoginUiState()
+    }
+
+    /**
+     * Decide pelo código de erro e não pelo texto da exceção: o texto traz também a URL da
+     * requisição, e a URL do login contém "password".
+     */
+    private fun traduzirErro(e: Throwable): String = when ((e as? AuthRestException)?.errorCode) {
+        AuthErrorCode.InvalidCredentials -> "E-mail ou senha incorretos."
+        AuthErrorCode.EmailNotConfirmed -> "E-mail ainda não confirmado. Verifique sua caixa de entrada."
+        AuthErrorCode.UserAlreadyExists, AuthErrorCode.EmailExists -> "Já existe uma conta com esse e-mail."
+        AuthErrorCode.WeakPassword -> "Senha muito fraca. Use pelo menos 6 caracteres."
+        AuthErrorCode.EmailAddressInvalid -> "E-mail inválido. Confira o endereço digitado."
+        AuthErrorCode.OverRequestRateLimit, AuthErrorCode.OverEmailSendRateLimit ->
+            "Muitas tentativas. Aguarde alguns minutos e tente de novo."
+        else ->
+            if (e is RestException) "O servidor não conseguiu atender agora. Tente de novo em instantes."
+            else "Não foi possível conectar. Verifique a conexão e tente de novo."
     }
 }

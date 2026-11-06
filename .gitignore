@@ -18,15 +18,13 @@ captures
 **/xcshareddata/WorkspaceSettings.xcsettings
 node_modules/
 
-# Configuração pessoal do Claude Code (caminhos da máquina do Lucas)
+# Configuração e anotações locais, que não fazem parte do projeto
 .claude/settings.local.json
-
-# Contexto do Claude Code e de interface (fica só na máquina)
 CLAUDE.md
 docs/UI-UX.md
 docs/mockups/
 
-# Assinatura do Android: NUNCA versionar
+# Assinatura do Android
 *.jks
 *.keystore
 keystore.properties

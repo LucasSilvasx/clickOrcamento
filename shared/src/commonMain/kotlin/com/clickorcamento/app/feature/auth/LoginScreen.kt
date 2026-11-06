@@ -4,8 +4,11 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,22 +32,13 @@ import com.clickorcamento.app.core.design.BotaoTema
 import com.clickorcamento.app.core.legal.DocumentosLegais
 import org.koin.compose.viewmodel.koinViewModel
 
-/**
- * Padrão de duas camadas:
- *   Screen  → conhece o ViewModel, só repassa estado e ações
- *   Conteudo → stateless puro, recebe tudo por parâmetro
- *
- * Assim o Conteudo é testável e previewável sem ViewModel, e fica
- * explícito quais ações a tela realmente dispara.
- */
+/** Só conhece o ViewModel e repassa; o desenho está em [LoginConteudo] e [ConfirmacaoConteudo]. */
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel = koinViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // Depois do cadastro a tela vira a etapa de confirmação, sem navegação:
-    // é só outro estado da mesma tela.
     if (state.aguardandoConfirmacao) {
         ConfirmacaoConteudo(
             state = state,
@@ -78,6 +72,7 @@ private fun ConfirmacaoConteudo(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
+            .imePadding()
     ) {
         BotaoTema(Modifier.align(Alignment.TopEnd).padding(12.dp))
 
@@ -85,6 +80,7 @@ private fun ConfirmacaoConteudo(
             modifier = Modifier
                 .align(Alignment.Center)
                 .widthIn(max = 400.dp)
+                .verticalScroll(rememberScrollState())
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -160,15 +156,16 @@ private fun LoginConteudo(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
+            .imePadding()
     ) {
         BotaoTema(Modifier.align(Alignment.TopEnd).padding(12.dp))
 
         Column(
             modifier = Modifier
                 .align(Alignment.Center)
-                // Largura máxima: sem isso, no desktop o formulário
-                // esticaria pela tela inteira e ficaria horrível.
                 .widthIn(max = 400.dp)
+                // Em tela baixa (celular deitado, teclado aberto) o formulário não cabe inteiro.
+                .verticalScroll(rememberScrollState())
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -186,7 +183,6 @@ private fun LoginConteudo(
                 label = { Text("E-mail") },
                 singleLine = true,
                 enabled = !state.carregando,
-                // Teclado de e-mail no celular, e "próximo" em vez de "enter"
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Email,
                     imeAction = ImeAction.Next
@@ -208,8 +204,10 @@ private fun LoginConteudo(
                     else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Password,
-                    imeAction = ImeAction.Done
+                    // No cadastro ainda falta a confirmação da senha.
+                    imeAction = if (state.modo == ModoAuth.ENTRAR) ImeAction.Done else ImeAction.Next
                 ),
+                keyboardActions = KeyboardActions(onDone = { onEnviar() }),
                 trailingIcon = {
                     TextButton(onClick = onAlternarVisibilidade) {
                         Text(
@@ -222,9 +220,6 @@ private fun LoginConteudo(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // AnimatedVisibility: o campo de confirmação desliza pra
-            // dentro quando o usuário troca pra cadastro, em vez de
-            // pular na tela.
             AnimatedVisibility(
                 visible = state.modo == ModoAuth.CADASTRAR,
                 enter = expandVertically() + fadeIn(),
@@ -241,7 +236,12 @@ private fun LoginConteudo(
                         visualTransformation =
                             if (state.senhaVisivel) VisualTransformation.None
                             else PasswordVisualTransformation(),
-                        // Só marca erro depois que o usuário digitou algo
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Password,
+                            imeAction = ImeAction.Done
+                        ),
+                        keyboardActions = KeyboardActions(onDone = { onEnviar() }),
+                        // Só marca erro depois que o usuário digitou algo.
                         isError = state.confirmacaoSenha.isNotEmpty() &&
                                 state.confirmacaoSenha != state.senha,
                         supportingText = {
@@ -386,7 +386,6 @@ private fun SeletorModo(modo: ModoAuth, onAlternar: () -> Unit) {
 
 @Composable
 private fun AbaModo(texto: String, ativo: Boolean, onClick: () -> Unit) {
-    // animateColorAsState faz a transição ser suave em vez de piscar
     val fundo by animateColorAsState(
         if (ativo) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant
     )

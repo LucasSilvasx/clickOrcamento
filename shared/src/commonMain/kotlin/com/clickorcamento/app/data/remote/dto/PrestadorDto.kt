@@ -8,13 +8,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-/**
- * Espelho da tabela `prestador`. O @SerialName liga o nome da coluna no banco
- * (snake_case) ao nome da propriedade em Kotlin (camelCase).
- *
- * Colunas que não declaramos (usuario_id, created_at, updated_at) são
- * ignoradas na leitura: o supabase-kt já configura o JSON para isso.
- */
+/** Espelho da tabela `prestador`. Colunas não declaradas são ignoradas na leitura. */
 @Serializable
 data class PrestadorDto(
     val id: String,
@@ -47,15 +41,11 @@ data class PrestadorDto(
 /**
  * Corpo do INSERT/UPDATE na tabela `prestador`.
  *
- * Montado como `JsonObject` (e não como `@Serializable`) de propósito: num
- * UPDATE, campo apagado pelo usuário precisa ir explícito no corpo para
- * limpar a coluna. Propriedade nula de classe pode ser omitida pelo
- * serializador (e aí o valor antigo ficaria no banco); num JsonObject, o
- * campo sempre vai.
+ * `JsonObject` de propósito: num UPDATE, campo apagado precisa ir explícito para limpar a
+ * coluna, e propriedade nula de classe `@Serializable` pode ser omitida pelo serializador.
  *
- * Campo em branco vai como texto vazio (`""`), não como `null`: no banco todas
- * as colunas de texto opcionais são `NOT NULL DEFAULT ''`. Mandar `null`
- * dá erro 23502 (not-null violation). No domínio continua `null` = "em branco".
+ * Campo em branco vai como `""`, não como `null`: as colunas de texto opcionais são
+ * `NOT NULL DEFAULT ''` e `null` daria erro 23502. No domínio continua `null` = em branco.
  *
  * `padrao` só entra no corpo quando informado (criação). Na edição fica de fora.
  */

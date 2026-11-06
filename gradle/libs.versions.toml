@@ -18,14 +18,11 @@ material3 = "1.12.0-alpha03"
 supabase = "3.8.0"
 ktor = "3.5.1"
 koin = "4.2.2"
-# Versão da navegação da JetBrains (não é a mesma numeração do Compose).
-# 2.10.0-rc01 é a mais recente publicada e depende do lifecycle 2.11.0,
-# o mesmo que já usamos. Trocar por 2.10.0 estável quando sair.
+# Numeração própria, diferente da do Compose. Depende do lifecycle 2.11.0.
+# Trocar por 2.10.0 estável quando sair.
 navigation-compose = "2.10.0-rc01"
-# Ícones Material (Icons.Outlined.*). A JetBrains parou esse artefato na 1.7.3
-# e ele NÃO acompanha a versão do Compose (1.12.0): são só dados (ImageVector),
-# então funciona com o Compose atual. Se um dia o ícone que você precisa não
-# existir aqui, desenhe um ImageVector à mão em core/design/.
+# Icons.Outlined.*. A JetBrains parou este artefato na 1.7.3 e ele não acompanha a versão
+# do Compose: são só dados (ImageVector), então funciona com o Compose atual.
 material-icons = "1.7.3"
 
 [libraries]
@@ -52,38 +49,27 @@ wrappers-browser = { module = "org.jetbrains.kotlin-wrappers:kotlin-browser", ve
 
 
 ##Ktor
-# Um engine para cada alvo. Note que o nome do artefato muda,
-# mas a API que você usa no código é idêntica nos três.
+# Um engine para cada alvo.
 ktor-client-cio    = { module = "io.ktor:ktor-client-cio",    version.ref = "ktor" }  # desktop
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }  # android
 ktor-client-js     = { module = "io.ktor:ktor-client-js",     version.ref = "ktor" }  # js e wasm
 
 ##Supabase
-# A "bom" (Bill of Materials) é uma lista de versões compatíveis
-# entre si. Você declara a versão UMA vez aqui, e os módulos abaixo
-# ficam sem versão — a bom resolve. Isso impede o clássico
-# "auth-kt 3.6 conversando com postgrest-kt 3.2".
+# A versão fica só na bom, para os módulos não saírem de sincronia.
 supabase-bom = { module = "io.github.jan-tennert.supabase:bom", version.ref = "supabase" }
 
-# auth-kt: login, sessão, e é ele quem coloca o token JWT em cada
-# requisição — sem isso o RLS não te reconhece e você não vê nada.
 supabase-auth = { module = "io.github.jan-tennert.supabase:auth-kt" }
 
-# postgrest-kt: o CRUD. Vira SELECT/INSERT/UPDATE/DELETE nas suas tabelas.
 supabase-postgrest = { module = "io.github.jan-tennert.supabase:postgrest-kt" }
 
 ##Koin
-# Injeção de dependência multiplataforma (Hilt não existe fora do Android).
-# Mesma ideia da bom do Supabase: a versão fica só na bom e os módulos
-# abaixo ficam sem versão.
+# Hilt não existe fora do Android. A versão fica só na bom.
 koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "koin" }
 koin-core = { module = "io.insert-koin:koin-core" }                              # o container (módulos, single, factory)
 koin-compose = { module = "io.insert-koin:koin-compose" }                        # KoinApplication e koinInject() no Compose
 koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel" }    # koinViewModel() e viewModelOf()
 
 ##Navegação
-# NavHost / NavController / rotas tipadas com @Serializable.
-# Mesma API do Navigation Compose do Android, portada para KMP.
 navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigation-compose" }
 
 [plugins]
@@ -95,8 +81,5 @@ kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 
 ##Supabase
-# Necessário para @Serializable. É ele que gera, em tempo de compilação,
-# o código que converte suas data classes em JSON e vice-versa.
-# version.ref = "kotlin" porque este plugin SEMPRE acompanha a versão
-# do Kotlin — nunca escolha uma versão diferente aqui.
+# Precisa acompanhar a versão do Kotlin.
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

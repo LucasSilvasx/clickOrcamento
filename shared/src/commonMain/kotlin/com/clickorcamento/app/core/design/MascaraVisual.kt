@@ -9,17 +9,11 @@ import com.clickorcamento.app.core.format.padraoCpfCnpj
 import com.clickorcamento.app.core.format.padraoTelefone
 
 /**
- * Máscara "só de desenho" para campos de texto.
+ * Máscara só de desenho: o estado guarda o miolo ("12345678000190") e a pontuação é
+ * desenhada por cima. Formatar no onValueChange deixaria o texto maior do que o digitado
+ * e o cursor ficaria um caractere antes do fim.
  *
- * Por que não formatar direto no onValueChange? Porque aí o texto do estado
- * fica maior do que o usuário digitou (ganha "." "/" "-") e o Compose deixa o
- * cursor na posição antiga, um caractere antes do fim. Com VisualTransformation
- * o estado guarda só o miolo ("12345678000190") e a pontuação é desenhada por
- * cima. É como o PasswordVisualTransformation do login, que desenha "•••"
- * sem mudar a senha guardada.
- *
- * O OffsetMapping traduz a posição do cursor entre os dois mundos:
- * miolo (o que está no estado) <-> texto formatado (o que aparece na tela).
+ * O OffsetMapping traduz a posição do cursor entre o miolo e o texto formatado.
  *
  * [padraoPara] escolhe a máscara pelo que já foi digitado (CPF vira CNPJ
  * no 12º caractere; telefone fixo vira celular no 11º dígito).

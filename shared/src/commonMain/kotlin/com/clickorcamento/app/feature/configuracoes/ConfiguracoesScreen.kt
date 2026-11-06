@@ -117,12 +117,9 @@ private fun ConfiguracoesConteudo(
 ) {
     val formulario = state.formulario
 
-    // verticalScroll: no celular (ou janela baixa) o conteúdo passa da tela.
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         if (formulario != null) {
-            // Modo formulário: a lista some e o formulário ocupa o lugar dela
-            // (mesma ideia da etapa "Confirme seu e-mail" do login: outro estado
-            // da mesma tela, sem navegação).
+            // Outro estado da mesma tela, sem navegação: o formulário ocupa o lugar da lista.
             Column(Modifier.widthIn(max = LarguraFormulario).fillMaxWidth()) {
                 EmpresaFormulario(
                     form = formulario,
@@ -296,7 +293,6 @@ private fun CartaoEmpresa(
 ) {
     val cores = MaterialTheme.colorScheme
 
-    // Surface com onClick: tocar no cartão abre a edição.
     Surface(
         onClick = onEditar,
         enabled = habilitado,
@@ -381,7 +377,6 @@ private fun MenuEmpresa(
                 leadingIcon = { Icon(Icons.Outlined.Edit, contentDescription = null) },
                 onClick = { aberto = false; onEditar() }
             )
-            // Já é a padrão? Então a opção não faz sentido e some.
             if (!empresa.padrao) {
                 DropdownMenuItem(
                     text = { Text("Definir como padrão") },

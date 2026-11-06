@@ -3,7 +3,9 @@ package com.clickorcamento.app.navigation
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -40,8 +42,10 @@ fun ClickNavHost() {
     // Observa a rota atual: quando muda, a casca recompõe e marca a aba certa.
     val entradaAtual by navController.currentBackStackEntryAsState()
 
+    // Lê o status para recalcular quando a sessão volta: durante RefreshFailure não há usuário ativo.
     val supabase = koinInject<SupabaseClient>()
-    val iniciais = iniciaisDoEmail(supabase.auth.currentUserOrNull()?.email)
+    val sessao by supabase.auth.sessionStatus.collectAsState()
+    val iniciais = remember(sessao) { iniciaisDoEmail(supabase.auth.currentUserOrNull()?.email) }
 
     // O editor é uma tela "cheia": no celular a casca esconde as barras e ele desenha as suas.
     val telaCheia = entradaAtual?.destination?.hasRoute(RotaEditorOrcamento::class) == true
@@ -102,14 +106,11 @@ private fun iniciaisDoEmail(email: String?): String =
         ?: "?"
 
 /**
- * Troca de aba sem empilhar telas. Receita padrão do Navigation:
- * - popUpTo(início) + saveState: ao trocar de aba, guarda o estado da que saiu;
- * - launchSingleTop: tocar na aba atual não cria cópia dela;
- * - restoreState: voltar para uma aba restaura o que o usuário deixou nela.
- * Assim o "voltar" do Android sai do app em vez de percorrer todas as abas.
+ * Troca de aba sem empilhar telas, com o estado de cada aba guardado: assim o "voltar" do
+ * Android sai do app em vez de percorrer todas as abas.
  *
- * Tocar na aba da área onde o usuário JÁ está não restaura nada (restoreState
- * traria o editor de volta): em Orçamentos, leva de volta à lista.
+ * Tocar na aba da área atual não restaura nada (restoreState traria o editor de volta):
+ * em Orçamentos, leva de volta à lista.
  */
 private fun NavController.irParaArea(destino: Destino) {
     val jaNaArea = currentDestination?.hierarchy?.any { it.hasRoute(destino.classe) } == true

@@ -20,11 +20,10 @@ actual fun rememberEntregadorPdf(): EntregadorPdf {
 /**
  * Grava o PDF na pasta de cache do app e abre a folha de compartilhamento.
  *
- * Por que FileProvider? Outro app (o WhatsApp, por exemplo) não pode ler os
- * arquivos privados do nosso. O FileProvider cria um endereço `content://`
- * temporário e dá permissão de leitura SÓ para quem recebe o arquivo.
- * Ele está declarado no AndroidManifest.xml do androidApp (authority
- * "<pacote>.arquivos") e a pasta liberada fica em res/xml/caminhos_arquivos.xml.
+ * O FileProvider é necessário porque outro app não pode ler os arquivos privados deste:
+ * ele cria um endereço `content://` temporário, com leitura só para quem recebe o arquivo.
+ * Está declarado no AndroidManifest.xml do androidApp (authority "<pacote>.arquivos") e a
+ * pasta liberada fica em res/xml/caminhos_arquivos.xml.
  */
 private class EntregadorPdfAndroid(private val contexto: Context) : EntregadorPdf {
     override suspend fun entregar(nomeArquivo: String, bytes: ByteArray): String? {

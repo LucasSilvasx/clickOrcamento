@@ -16,12 +16,8 @@ private object EntregadorPdfWeb : EntregadorPdf {
 }
 
 /**
- * JavaScript de verdade, chamado do Kotlin. No Kotlin/Wasm o `js(...)` precisa
- * ser o corpo inteiro de uma função de topo; os parâmetros são vistos pelo
- * nome dentro do código.
- *
- * Cria um Blob (o "arquivo em memória"), um link `<a download>` invisível
- * apontando para ele e clica no link: o navegador baixa com o nome dado.
+ * No Kotlin/Wasm o `js(...)` precisa ser o corpo inteiro de uma função de topo.
+ * Um Blob e um `<a download>` invisível fazem o navegador baixar com o nome dado.
  */
 private fun baixarPdf(nomeArquivo: String, base64: String): Unit = js(
     """{

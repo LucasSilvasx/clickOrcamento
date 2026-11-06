@@ -10,7 +10,7 @@ data class OrcamentosUiState(
     val orcamentos: List<OrcamentoResumo> = emptyList(),
     /** Quantas empresas o usuário tem: só com mais de uma o apelido da empresa aparece nas linhas. */
     val quantidadeEmpresas: Int = 1,
-    /** Falha ao CARREGAR a lista. */
+    /** Falha ao carregar a lista. */
     val erro: String? = null,
     val busca: String = "",
     /** `null` = "Todos". */
@@ -19,7 +19,7 @@ data class OrcamentosUiState(
     val orcamentoParaExcluir: OrcamentoResumo? = null,
     /** True enquanto duplicar/mudar status/excluir estão em andamento. */
     val ocupado: Boolean = false,
-    /** Falha numa AÇÃO: aparece sobre a lista, que continua visível. */
+    /** Falha numa ação: aparece sobre a lista, que continua visível. */
     val erroAcao: String? = null,
     val aviso: String? = null
 ) {
