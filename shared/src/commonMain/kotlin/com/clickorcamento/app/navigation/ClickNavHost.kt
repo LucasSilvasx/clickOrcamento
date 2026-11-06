@@ -1,5 +1,7 @@
 package com.clickorcamento.app.navigation
 
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.navigation.NavController
@@ -52,7 +54,10 @@ fun ClickNavHost() {
     ) {
         NavHost(
             navController = navController,
-            startDestination = RotaOrcamentos // o app abre na lista de orçamentos
+            startDestination = RotaOrcamentos, // o app abre na lista de orçamentos
+            // O padrão é um fade de 700 ms, que em cada troca de aba parece a tela recarregando.
+            enterTransition = { EnterTransition.None },
+            exitTransition = { ExitTransition.None }
         ) {
             navigation<RotaOrcamentos>(startDestination = RotaListaOrcamentos) {
                 composable<RotaListaOrcamentos> {

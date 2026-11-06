@@ -1,6 +1,7 @@
 package com.clickorcamento.app.di
 
 import com.clickorcamento.app.data.remote.criarSupabaseClient
+import com.clickorcamento.app.data.repository.CacheLeituras
 import com.clickorcamento.app.data.repository.ClienteRepositorySupabase
 import com.clickorcamento.app.data.repository.OrcamentoRepositorySupabase
 import com.clickorcamento.app.data.repository.PrestadorRepositorySupabase
@@ -29,6 +30,7 @@ import org.koin.dsl.module
  */
 val appModule = module {
     single { criarSupabaseClient() }
+    single { CacheLeituras() }
 
     // `bind` registra a implementação sob o nome da interface: quem pede
     // PrestadorRepository recebe a versão Supabase (e um teste poderia
