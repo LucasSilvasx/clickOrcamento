@@ -6,6 +6,8 @@ import com.clickorcamento.app.domain.model.Prestador
 import com.clickorcamento.app.domain.repository.PrestadorRepository
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.rpc
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -167,6 +169,46 @@ class ConfiguracoesViewModel(
             // Se falhar, a sessão continua e a tela não muda: o usuário vê que
             // nada aconteceu e toca de novo. Mensagem própria fica para depois.
             runCatching { supabase.auth.signOut() }
+        }
+    }
+
+    fun abrirExclusaoConta() {
+        _uiState.update {
+            it.copy(exclusaoContaAberta = true, confirmacaoExclusaoConta = "", erroExclusaoConta = null)
+        }
+    }
+
+    fun aoMudarConfirmacaoExclusaoConta(texto: String) {
+        _uiState.update { it.copy(confirmacaoExclusaoConta = texto, erroExclusaoConta = null) }
+    }
+
+    fun fecharExclusaoConta() {
+        _uiState.update { if (it.excluindoConta) it else it.copy(exclusaoContaAberta = false) }
+    }
+
+    /**
+     * Apaga a conta e todos os dados no banco. O `sessionStatus` do App.kt percebe o fim
+     * da sessão e troca para o Login, e o App.kt limpa o cache das listas.
+     */
+    fun confirmarExclusaoConta() {
+        if (!_uiState.value.podeExcluirConta) return
+        _uiState.update { it.copy(excluindoConta = true, erroExclusaoConta = null) }
+
+        viewModelScope.launch {
+            runCatching {
+                supabase.postgrest.rpc("excluir_minha_conta")
+                // clearSession em vez de signOut: o usuário já não existe no servidor,
+                // então só falta apagar a sessão guardada neste aparelho.
+                supabase.auth.clearSession()
+            }.onFailure { e ->
+                _uiState.update {
+                    it.copy(
+                        excluindoConta = false,
+                        erroExclusaoConta = "Não foi possível excluir a conta. Verifique a " +
+                            "conexão e tente de novo. ${e.message.orEmpty()}"
+                    )
+                }
+            }
         }
     }
 

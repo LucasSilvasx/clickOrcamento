@@ -19,12 +19,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.DarkMode
-import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -43,9 +39,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
+import com.clickorcamento.app.core.design.BotaoTema
 import com.clickorcamento.app.core.design.LarguraMinimaDesktop
-import com.clickorcamento.app.core.design.LocalAlternarTema
-import com.clickorcamento.app.core.design.LocalTemaEscuro
 
 /**
  * Moldura do app logado: escolhe o layout pela largura disponível e
@@ -199,8 +194,6 @@ private fun CascaDesktop(
 @Composable
 private fun BarraTopoDesktop(iniciais: String) {
     val cores = MaterialTheme.colorScheme
-    val escuro = LocalTemaEscuro.current
-    val alternarTema = LocalAlternarTema.current
 
     Row(
         modifier = Modifier.fillMaxWidth().height(56.dp).padding(horizontal = 20.dp),
@@ -224,14 +217,7 @@ private fun BarraTopoDesktop(iniciais: String) {
             fontSize = 15.sp,
             fontWeight = FontWeight.SemiBold
         )
-        // Mostra o ícone da ação (ir para escuro / ir para claro), não do estado atual.
-        IconButton(onClick = alternarTema) {
-            Icon(
-                imageVector = if (escuro) Icons.Outlined.LightMode else Icons.Outlined.DarkMode,
-                contentDescription = "Alternar tema",
-                tint = cores.onSurfaceVariant
-            )
-        }
+        BotaoTema()
         Box(
             modifier = Modifier
                 .padding(start = 4.dp)

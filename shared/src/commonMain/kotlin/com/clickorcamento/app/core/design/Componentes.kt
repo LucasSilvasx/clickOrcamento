@@ -16,10 +16,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.ExpandMore
+import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -228,6 +231,23 @@ fun CampoSeletor(
                 .clickable(enabled = habilitado, onClick = aoClicar)
         )
         menu()
+    }
+}
+
+/**
+ * Alterna entre claro e escuro; não desenha nada onde o tema segue o sistema.
+ * O ícone mostra a ação (sol leva ao claro, lua ao escuro), não o estado atual.
+ */
+@Composable
+fun BotaoTema(modifier: Modifier = Modifier) {
+    val alternar = LocalAlternarTema.current ?: return
+    val escuro = LocalTemaEscuro.current
+    IconButton(onClick = alternar, modifier = modifier) {
+        Icon(
+            imageVector = if (escuro) Icons.Outlined.LightMode else Icons.Outlined.DarkMode,
+            contentDescription = if (escuro) "Usar tema claro" else "Usar tema escuro",
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 

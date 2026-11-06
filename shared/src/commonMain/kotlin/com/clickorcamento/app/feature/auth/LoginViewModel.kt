@@ -2,6 +2,7 @@ package com.clickorcamento.app.feature.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.clickorcamento.app.core.legal.DocumentosLegais
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.OtpType
@@ -11,6 +12,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 
 /**
  * O cliente é injetado pelo Koin (ver di/AppModule.kt). Como ele chega
@@ -37,10 +40,14 @@ class LoginViewModel(
     fun alternarVisibilidadeSenha() =
         _uiState.update { it.copy(senhaVisivel = !it.senhaVisivel) }
 
+    fun aoMudarAceiteTermos(aceitou: Boolean) =
+        _uiState.update { it.copy(aceitouTermos = aceitou, erro = null) }
+
     fun alternarModo() = _uiState.update {
         it.copy(
             modo = if (it.modo == ModoAuth.ENTRAR) ModoAuth.CADASTRAR else ModoAuth.ENTRAR,
             confirmacaoSenha = "",
+            aceitouTermos = false,
             erro = null,
             aviso = null
         )
@@ -66,6 +73,8 @@ class LoginViewModel(
                     cliente.auth.signUpWith(Email) {
                         email = estado.email
                         password = estado.senha
+                        // Registra qual texto foi aceito; a data é a do próprio cadastro.
+                        data = buildJsonObject { put("termos_versao", DocumentosLegais.VERSAO) }
                     }
                     "Enviamos um e-mail de confirmação para ${estado.email}."
                 }
@@ -74,10 +83,10 @@ class LoginViewModel(
                     it.copy(
                         carregando = false,
                         aviso = mensagem,
-                        // Cadastro feito: a tela passa a pedir o código do e-mail.
+                        // Cadastro feito: a tela passa a orientar a confirmação por e-mail.
                         // Voltamos o modo para ENTRAR para que, se o usuário
-                        // desistir do código, caia no login normal.
-                        aguardandoCodigo = mensagem != null,
+                        // desistir da confirmação, caia no login normal.
+                        aguardandoConfirmacao = mensagem != null,
                         modo = if (mensagem != null) ModoAuth.ENTRAR else it.modo,
                         // A senha fica na memória durante a etapa de confirmação:
                         // é ela que usamos no "Já confirmei, entrar". Sai em voltarParaLogin().
@@ -86,12 +95,12 @@ class LoginViewModel(
                 }
             }.onFailure { e ->
                 // Conta criada antes, mas nunca confirmada: em vez de só dar
-                // erro, levamos o usuário para a etapa do código e pedimos um novo.
+                // erro, levamos o usuário para a etapa de confirmação e pedimos um novo e-mail.
                 if (e.message.orEmpty().contains("Email not confirmed", true)) {
                     _uiState.update {
-                        it.copy(carregando = false, aguardandoCodigo = true, codigo = "")
+                        it.copy(carregando = false, aguardandoConfirmacao = true)
                     }
-                    reenviarCodigo()
+                    reenviarConfirmacao()
                 } else {
                     _uiState.update {
                         it.copy(carregando = false, erro = traduzirErro(e))
@@ -101,37 +110,7 @@ class LoginViewModel(
         }
     }
 
-    // O código é só número: filtramos o que vier (colar "123 456" também funciona).
-    fun aoMudarCodigo(valor: String) =
-        _uiState.update { it.copy(codigo = valor.filter(Char::isDigit).take(8), erro = null) }
-
-    /**
-     * Valida o código digitado. Se estiver certo, o supabase-kt cria a sessão
-     * sozinho e o `sessionStatus` do App.kt troca para a Home; esta tela
-     * não precisa navegar para lugar nenhum.
-     */
-    fun confirmarCodigo() {
-        val estado = _uiState.value
-        if (!estado.podeConfirmar) return
-
-        _uiState.update { it.copy(carregando = true, erro = null, aviso = null) }
-
-        viewModelScope.launch {
-            runCatching {
-                cliente.auth.verifyEmailOtp(
-                    type = OtpType.Email.SIGNUP,
-                    email = estado.email,
-                    token = estado.codigo
-                )
-            }.onSuccess {
-                _uiState.update { it.copy(carregando = false) }
-            }.onFailure { e ->
-                _uiState.update { it.copy(carregando = false, erro = traduzirErro(e)) }
-            }
-        }
-    }
-
-    fun reenviarCodigo() {
+    fun reenviarConfirmacao() {
         val email = _uiState.value.email
         _uiState.update { it.copy(carregando = true, erro = null, aviso = null) }
 
@@ -140,7 +119,7 @@ class LoginViewModel(
                 cliente.auth.resendEmail(OtpType.Email.SIGNUP, email)
             }.onSuccess {
                 _uiState.update {
-                    it.copy(carregando = false, aviso = "Enviamos um novo código para $email.")
+                    it.copy(carregando = false, aviso = "Enviamos um novo e-mail de confirmação para $email.")
                 }
             }.onFailure { e ->
                 _uiState.update { it.copy(carregando = false, erro = traduzirErro(e)) }
@@ -175,7 +154,7 @@ class LoginViewModel(
 
     /** Desiste da etapa de confirmação e volta para o formulário de login. */
     fun voltarParaLogin() = _uiState.update {
-        it.copy(aguardandoCodigo = false, codigo = "", senha = "", erro = null, aviso = null)
+        it.copy(aguardandoConfirmacao = false, senha = "", erro = null, aviso = null)
     }
 
     /**
@@ -198,7 +177,7 @@ class LoginViewModel(
                 original.contains("only request this after", true) ->
                 "Muitas tentativas. Aguarde cerca de um minuto."
             original.contains("expired", true) || original.contains("invalid", true) ->
-                "Código inválido ou expirado. Confira os dígitos ou peça um novo."
+                "Dados inválidos ou expirados. Confira o e-mail e tente novamente."
             else -> "Não foi possível conectar. $original"
         }
     }

@@ -12,10 +12,11 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
 class PrestadorRepositorySupabase(
-    private val cliente: SupabaseClient
+    private val cliente: SupabaseClient,
+    private val cache: CacheLeituras
 ) : PrestadorRepository {
 
-    override suspend fun listar(): List<Prestador> =
+    override suspend fun listar(): List<Prestador> = cache.ler("empresas") {
         cliente.from("prestador")
             .select {
                 // Sem filtro por usuário: o RLS do banco já devolve só as
@@ -25,16 +26,19 @@ class PrestadorRepositorySupabase(
             }
             .decodeList<PrestadorDto>()
             .map { it.paraDominio() }
-
-    // usuario_id não vai no corpo: o banco preenche com auth.uid() (default da coluna).
-    override suspend fun criar(dados: DadosPrestador, padrao: Boolean) {
-        cliente.from("prestador").insert(dados.paraJson(padrao))
     }
 
-    override suspend fun atualizar(id: String, dados: DadosPrestador) {
+    // usuario_id não vai no corpo: o banco preenche com auth.uid() (default da coluna).
+    override suspend fun criar(dados: DadosPrestador, padrao: Boolean) = cache.gravando {
+        cliente.from("prestador").insert(dados.paraJson(padrao))
+        Unit
+    }
+
+    override suspend fun atualizar(id: String, dados: DadosPrestador) = cache.gravando {
         cliente.from("prestador").update(dados.paraJson()) {
             filter { eq("id", id) }
         }
+        Unit
     }
 
     /**
@@ -43,18 +47,20 @@ class PrestadorRepositorySupabase(
      * depois marcamos a nova. Se o segundo passo falhar, o usuário fica sem
      * padrão até tentar de novo (nada se perde); o ViewModel recarrega a lista.
      */
-    override suspend fun definirPadrao(id: String) {
+    override suspend fun definirPadrao(id: String) = cache.gravando {
         cliente.from("prestador").update(buildJsonObject { put("padrao", false) }) {
             filter { eq("padrao", true) }
         }
         cliente.from("prestador").update(buildJsonObject { put("padrao", true) }) {
             filter { eq("id", id) }
         }
+        Unit
     }
 
-    override suspend fun excluir(id: String) {
+    override suspend fun excluir(id: String) = cache.gravando {
         cliente.from("prestador").delete {
             filter { eq("id", id) }
         }
+        Unit
     }
 }

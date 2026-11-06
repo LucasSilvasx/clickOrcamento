@@ -24,8 +24,18 @@ data class ConfiguracoesUiState(
     /** Falha numa AÇÃO (padrão/excluir): aparece sobre a lista, que continua visível. */
     val erroAcao: String? = null,
     /** Confirmação discreta da última ação ("Empresa salva"). */
-    val aviso: String? = null
+    val aviso: String? = null,
+    /** Diálogo de excluir a conta aberto. */
+    val exclusaoContaAberta: Boolean = false,
+    /** E-mail digitado no diálogo: exclusão irreversível pede mais que um toque. */
+    val confirmacaoExclusaoConta: String = "",
+    val excluindoConta: Boolean = false,
+    val erroExclusaoConta: String? = null
 ) {
+    val podeExcluirConta: Boolean
+        get() = !excluindoConta && emailUsuario.isNotEmpty() &&
+            confirmacaoExclusaoConta.trim().equals(emailUsuario, ignoreCase = true)
+
     // Situações da tela, derivadas aqui para a tela só ler e escolher o que
     // desenhar.
     val mostrarCarregando: Boolean

@@ -11,16 +11,22 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.clickorcamento.app.core.design.LocalAlternarTema
-import com.clickorcamento.app.core.design.LocalTemaEscuro
+import com.clickorcamento.app.core.design.BotaoTema
+import com.clickorcamento.app.core.legal.DocumentosLegais
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -37,15 +43,13 @@ fun LoginScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // Depois do cadastro a tela vira a "etapa do código", sem navegação:
+    // Depois do cadastro a tela vira a etapa de confirmação, sem navegação:
     // é só outro estado da mesma tela.
-    if (state.aguardandoCodigo) {
-        CodigoConteudo(
+    if (state.aguardandoConfirmacao) {
+        ConfirmacaoConteudo(
             state = state,
-            onCodigo = viewModel::aoMudarCodigo,
-            onConfirmar = viewModel::confirmarCodigo,
             onEntrar = viewModel::entrarAposConfirmar,
-            onReenviar = viewModel::reenviarCodigo,
+            onReenviar = viewModel::reenviarConfirmacao,
             onVoltar = viewModel::voltarParaLogin
         )
     } else {
@@ -55,36 +59,27 @@ fun LoginScreen(
             onSenha = viewModel::aoMudarSenha,
             onConfirmacao = viewModel::aoMudarConfirmacao,
             onAlternarVisibilidade = viewModel::alternarVisibilidadeSenha,
+            onAceiteTermos = viewModel::aoMudarAceiteTermos,
             onAlternarModo = viewModel::alternarModo,
             onEnviar = viewModel::enviar
         )
     }
 }
 
-/** Etapa 2 do cadastro: digitar o código que chegou por e-mail. */
+/** Etapa 2 do cadastro: clicar no link que chegou por e-mail e voltar para entrar. */
 @Composable
-private fun CodigoConteudo(
+private fun ConfirmacaoConteudo(
     state: LoginUiState,
-    onCodigo: (String) -> Unit,
-    onConfirmar: () -> Unit,
     onEntrar: () -> Unit,
     onReenviar: () -> Unit,
     onVoltar: () -> Unit
 ) {
-    val temaEscuro = LocalTemaEscuro.current
-    val alternarTema = LocalAlternarTema.current
-
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        TextButton(
-            onClick = alternarTema,
-            modifier = Modifier.align(Alignment.TopEnd).padding(12.dp)
-        ) {
-            Text(if (temaEscuro) "Tema claro" else "Tema escuro")
-        }
+        BotaoTema(Modifier.align(Alignment.TopEnd).padding(12.dp))
 
         Column(
             modifier = Modifier
@@ -127,27 +122,6 @@ private fun CodigoConteudo(
                 }
             }
 
-            Spacer(Modifier.height(24.dp))
-
-            // Alternativa: só funciona se o e-mail trouxer um código de verdade
-            // (depende do template do Supabase). Fica discreta de propósito.
-            OutlinedTextField(
-                value = state.codigo,
-                onValueChange = onCodigo,
-                label = { Text("Código do e-mail (se houver)") },
-                singleLine = true,
-                enabled = !state.carregando,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Number,
-                    imeAction = ImeAction.Done
-                ),
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.fillMaxWidth()
-            )
-            TextButton(onClick = onConfirmar, enabled = state.podeConfirmar) {
-                Text("Confirmar código", style = MaterialTheme.typography.bodyMedium)
-            }
-
             Mensagem(
                 texto = state.erro,
                 fundo = MaterialTheme.colorScheme.errorContainer,
@@ -162,7 +136,7 @@ private fun CodigoConteudo(
             Spacer(Modifier.height(16.dp))
 
             TextButton(onClick = onReenviar, enabled = !state.carregando) {
-                Text("Reenviar código", style = MaterialTheme.typography.bodyMedium)
+                Text("Reenviar e-mail", style = MaterialTheme.typography.bodyMedium)
             }
             TextButton(onClick = onVoltar, enabled = !state.carregando) {
                 Text("Voltar para o login", style = MaterialTheme.typography.bodyMedium)
@@ -178,25 +152,16 @@ private fun LoginConteudo(
     onSenha: (String) -> Unit,
     onConfirmacao: (String) -> Unit,
     onAlternarVisibilidade: () -> Unit,
+    onAceiteTermos: (Boolean) -> Unit,
     onAlternarModo: () -> Unit,
     onEnviar: () -> Unit
 ) {
-    val temaEscuro = LocalTemaEscuro.current
-    val alternarTema = LocalAlternarTema.current
-
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // Botão de tema no canto.
-        // TODO: trocar o texto pelo ícone, como na barra do topo do app.
-        TextButton(
-            onClick = alternarTema,
-            modifier = Modifier.align(Alignment.TopEnd).padding(12.dp)
-        ) {
-            Text(if (temaEscuro) "Tema claro" else "Tema escuro")
-        }
+        BotaoTema(Modifier.align(Alignment.TopEnd).padding(12.dp))
 
         Column(
             modifier = Modifier
@@ -288,6 +253,12 @@ private fun LoginConteudo(
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.fillMaxWidth()
                     )
+                    Spacer(Modifier.height(4.dp))
+                    AceiteTermos(
+                        aceito = state.aceitouTermos,
+                        habilitado = !state.carregando,
+                        aoMudar = onAceiteTermos
+                    )
                 }
             }
 
@@ -333,6 +304,35 @@ private fun LoginConteudo(
                 )
             }
         }
+    }
+}
+
+/** Aceite exigido no cadastro. Os links abrem os textos no navegador, nos três alvos. */
+@Composable
+private fun AceiteTermos(aceito: Boolean, habilitado: Boolean, aoMudar: (Boolean) -> Unit) {
+    val estiloLink = TextLinkStyles(
+        SpanStyle(
+            color = MaterialTheme.colorScheme.primary,
+            textDecoration = TextDecoration.Underline
+        )
+    )
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Checkbox(checked = aceito, onCheckedChange = aoMudar, enabled = habilitado)
+        Text(
+            text = buildAnnotatedString {
+                append("Li e aceito os ")
+                withLink(LinkAnnotation.Url(DocumentosLegais.URL_TERMOS, estiloLink)) {
+                    append("Termos de Uso")
+                }
+                append(" e a ")
+                withLink(LinkAnnotation.Url(DocumentosLegais.URL_PRIVACIDADE, estiloLink)) {
+                    append("Política de Privacidade")
+                }
+                append(".")
+            },
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 

@@ -10,32 +10,37 @@ import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Order
 
 class ClienteRepositorySupabase(
-    private val supabase: SupabaseClient
+    private val supabase: SupabaseClient,
+    private val cache: CacheLeituras
 ) : ClienteRepository {
 
     // Sem filtro por usuário: o RLS já devolve só as linhas de quem está logado.
-    override suspend fun listar(): List<Cliente> =
+    override suspend fun listar(): List<Cliente> = cache.ler("clientes") {
         supabase.from("cliente")
             .select { order("razao_social", Order.ASCENDING) }
             .decodeList<ClienteDto>()
             .map { it.paraDominio() }
+    }
 
     // `select()` no fim pede ao banco que devolva a linha criada (com o id novo).
-    override suspend fun criar(dados: DadosCliente): Cliente =
+    override suspend fun criar(dados: DadosCliente): Cliente = cache.gravando {
         supabase.from("cliente")
             .insert(dados.paraJson()) { select() }
             .decodeSingle<ClienteDto>()
             .paraDominio()
+    }
 
-    override suspend fun atualizar(id: String, dados: DadosCliente) {
+    override suspend fun atualizar(id: String, dados: DadosCliente) = cache.gravando {
         supabase.from("cliente").update(dados.paraJson()) {
             filter { eq("id", id) }
         }
+        Unit
     }
 
-    override suspend fun excluir(id: String) {
+    override suspend fun excluir(id: String) = cache.gravando {
         supabase.from("cliente").delete {
             filter { eq("id", id) }
         }
+        Unit
     }
 }

@@ -19,12 +19,14 @@ enum class PreferenciaTema { SISTEMA, CLARO, ESCURO }
 val LocalTemaEscuro = staticCompositionLocalOf<Boolean> {
     error("ClickTheme não foi aplicado")
 }
-val LocalAlternarTema = staticCompositionLocalOf<() -> Unit> {
+/** Nulo quando o app segue sempre o tema do sistema e não há o que alternar. */
+val LocalAlternarTema = staticCompositionLocalOf<(() -> Unit)?> {
     error("ClickTheme não foi aplicado")
 }
 
+/** [temaManual] = false fixa a preferência em SISTEMA e tira a alternância da interface. */
 @Composable
-fun ClickTheme(content: @Composable () -> Unit) {
+fun ClickTheme(temaManual: Boolean = true, content: @Composable () -> Unit) {
     var preferencia by remember { mutableStateOf(PreferenciaTema.SISTEMA) }
 
     // Lê a configuração do sistema operacional / navegador
@@ -45,7 +47,7 @@ fun ClickTheme(content: @Composable () -> Unit) {
 
     CompositionLocalProvider(
         LocalTemaEscuro provides usarEscuro,
-        LocalAlternarTema provides alternar
+        LocalAlternarTema provides alternar.takeIf { temaManual }
     ) {
         MaterialTheme(
             colorScheme = if (usarEscuro) EsquemaEscuro else EsquemaClaro,

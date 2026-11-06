@@ -15,14 +15,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.DeleteForever
+import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.PrivacyTip
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material.icons.outlined.Storefront
 import androidx.compose.material3.AlertDialog
@@ -35,6 +39,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -46,11 +51,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.clickorcamento.app.core.format.formatarCpfCnpj
+import com.clickorcamento.app.core.legal.DocumentosLegais
 import com.clickorcamento.app.domain.model.Prestador
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -71,6 +80,10 @@ fun ConfiguracoesScreen(
         state = state,
         onTentarDeNovo = viewModel::carregar,
         onSair = viewModel::sair,
+        onAbrirExclusaoConta = viewModel::abrirExclusaoConta,
+        onMudarConfirmacaoExclusaoConta = viewModel::aoMudarConfirmacaoExclusaoConta,
+        onConfirmarExclusaoConta = viewModel::confirmarExclusaoConta,
+        onFecharExclusaoConta = viewModel::fecharExclusaoConta,
         onNovaEmpresa = viewModel::novaEmpresa,
         onEditar = viewModel::editarEmpresa,
         onDefinirPadrao = viewModel::definirComoPadrao,
@@ -88,6 +101,10 @@ private fun ConfiguracoesConteudo(
     state: ConfiguracoesUiState,
     onTentarDeNovo: () -> Unit,
     onSair: () -> Unit,
+    onAbrirExclusaoConta: () -> Unit,
+    onMudarConfirmacaoExclusaoConta: (String) -> Unit,
+    onConfirmarExclusaoConta: () -> Unit,
+    onFecharExclusaoConta: () -> Unit,
     onNovaEmpresa: () -> Unit,
     onEditar: (Prestador) -> Unit,
     onDefinirPadrao: (Prestador) -> Unit,
@@ -129,9 +146,22 @@ private fun ConfiguracoesConteudo(
 
                 // A seção Conta fica fora do `when` das empresas de propósito:
                 // mesmo com erro de carga, o "Sair" continua acessível.
-                SecaoConta(email = state.emailUsuario, onSair = onSair)
+                SecaoConta(
+                    email = state.emailUsuario,
+                    onSair = onSair,
+                    onExcluirConta = onAbrirExclusaoConta
+                )
             }
         }
+    }
+
+    if (state.exclusaoContaAberta) {
+        DialogoExcluirConta(
+            state = state,
+            aoMudarConfirmacao = onMudarConfirmacaoExclusaoConta,
+            aoConfirmar = onConfirmarExclusaoConta,
+            aoFechar = onFecharExclusaoConta
+        )
     }
 
     state.empresaParaExcluir?.let { empresa ->
@@ -394,8 +424,9 @@ private fun Badge(texto: String) {
 // --- Conta ---
 
 @Composable
-private fun SecaoConta(email: String, onSair: () -> Unit) {
+private fun SecaoConta(email: String, onSair: () -> Unit, onExcluirConta: () -> Unit) {
     val cores = MaterialTheme.colorScheme
+    val links = LocalUriHandler.current
 
     Text("Conta", style = MaterialTheme.typography.titleMedium)
     Spacer(Modifier.height(12.dp))
@@ -436,8 +467,86 @@ private fun SecaoConta(email: String, onSair: () -> Unit) {
                     color = cores.error
                 )
             }
+            HorizontalDivider(color = cores.outlineVariant)
+            LinhaConta(
+                icone = Icons.Outlined.Description,
+                tint = cores.onSurfaceVariant,
+                aoClicar = { links.openUri(DocumentosLegais.URL_TERMOS) }
+            ) {
+                Text("Termos de Uso", style = MaterialTheme.typography.bodyLarge)
+            }
+            HorizontalDivider(color = cores.outlineVariant)
+            LinhaConta(
+                icone = Icons.Outlined.PrivacyTip,
+                tint = cores.onSurfaceVariant,
+                aoClicar = { links.openUri(DocumentosLegais.URL_PRIVACIDADE) }
+            ) {
+                Text("Política de Privacidade", style = MaterialTheme.typography.bodyLarge)
+            }
+            HorizontalDivider(color = cores.outlineVariant)
+            LinhaConta(
+                icone = Icons.Outlined.DeleteForever,
+                tint = cores.error,
+                aoClicar = onExcluirConta
+            ) {
+                Text(
+                    text = "Excluir minha conta",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = cores.error
+                )
+            }
         }
     }
+}
+
+/** Pede o e-mail digitado: a exclusão apaga tudo e não pode ser desfeita. */
+@Composable
+private fun DialogoExcluirConta(
+    state: ConfiguracoesUiState,
+    aoMudarConfirmacao: (String) -> Unit,
+    aoConfirmar: () -> Unit,
+    aoFechar: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = aoFechar,
+        title = { Text("Excluir sua conta?") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    "Todas as suas empresas, clientes e orçamentos serão apagados. " +
+                        "Essa ação não pode ser desfeita."
+                )
+                Text("Para confirmar, digite seu e-mail: ${state.emailUsuario}")
+                OutlinedTextField(
+                    value = state.confirmacaoExclusaoConta,
+                    onValueChange = aoMudarConfirmacao,
+                    label = { Text("E-mail") },
+                    singleLine = true,
+                    enabled = !state.excluindoConta,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                state.erroExclusaoConta?.let { erro ->
+                    Text(
+                        text = erro,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = aoConfirmar, enabled = state.podeExcluirConta) {
+                Text(
+                    text = if (state.excluindoConta) "Excluindo..." else "Excluir conta",
+                    color = if (state.podeExcluirConta) MaterialTheme.colorScheme.error else Color.Unspecified
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = aoFechar, enabled = !state.excluindoConta) { Text("Cancelar") }
+        }
+    )
 }
 
 @Composable

@@ -20,15 +20,18 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
 class OrcamentoRepositorySupabase(
-    private val supabase: SupabaseClient
+    private val supabase: SupabaseClient,
+    private val cache: CacheLeituras
 ) : OrcamentoRepository {
 
-    override suspend fun listarResumos(): List<OrcamentoResumo> =
+    override suspend fun listarResumos(): List<OrcamentoResumo> = cache.ler("orcamentos") {
         supabase.from("orcamento_resumo")
             .select { order("numero", Order.DESCENDING) }
             .decodeList<OrcamentoResumoDto>()
             .map { it.paraDominio() }
+    }
 
+    // Fora do cache de propósito: quem vai editar precisa da versão atual do banco.
     override suspend fun buscar(id: String): Orcamento {
         val orcamento = supabase.from("orcamento")
             .select { filter { eq("id", id) } }
@@ -45,7 +48,7 @@ class OrcamentoRepositorySupabase(
         return orcamento.paraDominio(itens)
     }
 
-    override suspend fun criar(dados: DadosOrcamento): OrcamentoCriado {
+    override suspend fun criar(dados: DadosOrcamento): OrcamentoCriado = cache.gravando {
         // `numero` não vai no corpo: o trigger definir_numero_orcamento preenche.
         val criado = supabase.from("orcamento")
             .insert(dados.paraJson()) { select() }
@@ -59,10 +62,10 @@ class OrcamentoRepositorySupabase(
             runCatching { excluir(criado.id) }
             throw e
         }
-        return OrcamentoCriado(id = criado.id, numero = criado.numero)
+        OrcamentoCriado(id = criado.id, numero = criado.numero)
     }
 
-    override suspend fun atualizar(id: String, dados: DadosOrcamento): Int {
+    override suspend fun atualizar(id: String, dados: DadosOrcamento): Int = cache.gravando {
         // `select()` devolve a linha já gravada: se a empresa mudou, o trigger
         // trocou o número e é este novo que a tela (e o PDF) precisam usar.
         val atualizado = supabase.from("orcamento")
@@ -72,7 +75,7 @@ class OrcamentoRepositorySupabase(
             }
             .decodeSingle<OrcamentoDto>()
         gravarItens(id, dados.itens)
-        return atualizado.numero
+        atualizado.numero
     }
 
     override suspend fun duplicar(id: String): OrcamentoCriado {
@@ -93,16 +96,18 @@ class OrcamentoRepositorySupabase(
         )
     }
 
-    override suspend fun atualizarStatus(id: String, status: StatusOrcamento) {
+    override suspend fun atualizarStatus(id: String, status: StatusOrcamento) = cache.gravando {
         supabase.from("orcamento").update(buildJsonObject { put("status", status.name) }) {
             filter { eq("id", id) }
         }
+        Unit
     }
 
-    override suspend fun excluir(id: String) {
+    override suspend fun excluir(id: String) = cache.gravando {
         supabase.from("orcamento").delete {
             filter { eq("id", id) }
         }
+        Unit
     }
 
     /**
