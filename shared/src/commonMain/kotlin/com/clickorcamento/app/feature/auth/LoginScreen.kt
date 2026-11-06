@@ -92,8 +92,7 @@ private fun ConfirmacaoConteudo(
             Spacer(Modifier.height(8.dp))
             Text(
                 text = "Abra o e-mail que enviamos para ${state.email} e clique no link de " +
-                    "confirmação. Pode aparecer uma página de erro no navegador (localhost): " +
-                    "é normal, a conta já fica confirmada. Depois volte aqui.",
+                    "confirmação. Depois volte aqui.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
