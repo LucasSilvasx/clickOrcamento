@@ -1,0 +1,4 @@
+<resources>
+    <!-- Mesma cor do azulejo do logo: assim o recorte do launcher não mostra emenda. -->
+    <color name="fundo_icone">#081332</color>
+</resources>
