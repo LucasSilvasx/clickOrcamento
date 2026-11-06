@@ -8,7 +8,7 @@
 ![Plataformas](https://img.shields.io/badge/plataformas-Desktop%20·%20Android%20·%20Web-1F4E79)
 ![Versão](https://img.shields.io/github/v/release/LucasSilvasx/clickOrcamento?label=vers%C3%A3o&color=1F4E79)
 
-O fluxo principal (empresas → clientes → orçamento → PDF) funciona nas três plataformas. O que ainda falta está no [roteiro](#-roteiro).
+O fluxo principal (empresas → clientes → orçamento → PDF) funciona nas três plataformas. O que ainda falta está no [roteiro](#roteiro).
 
 ## ⬇️ Experimente
 
@@ -121,13 +121,15 @@ O app aponta para o mesmo projeto Supabase da versão publicada (`shared/.../dat
 
 ```
 shared/src/commonMain/kotlin/com/clickorcamento/app/
-├── core/        design (tema, componentes), format (moeda, datas, documentos), pdf
+├── core/        design (tema, componentes), erro, format (moeda, datas, documentos), legal, pdf
 ├── domain/      modelos e interfaces de repositório
 ├── data/        implementações com Supabase + DTOs
 ├── feature/     auth, configuracoes (empresas), cliente, orcamento (lista e editor)
 ├── navigation/  rotas tipadas, NavHost e casca responsiva
 └── di/          módulos do Koin
 ```
+
+<a id="roteiro"></a>
 
 ## 🗺️ Roteiro
 
@@ -146,7 +148,7 @@ Projeto pessoal em que aprendi Kotlin Multiplatform, vindo do Android nativo. Us
 ## 👤 Autor
 
 **Lucas Gabriel Silva** · Desenvolvedor Android (Kotlin + Jetpack Compose)
-[GitHub](https://github.com/LucasSilvasx)
+[LinkedIn](https://www.linkedin.com/in/lucasgabrielcsilva/) · [GitHub](https://github.com/LucasSilvasx)
 
 ---
 
