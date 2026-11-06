@@ -12,11 +12,6 @@ plugins {
 kotlin {
     jvm()
 
-    js {
-        browser()
-        binaries.executable()
-    }
-
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         browser()
@@ -81,11 +76,6 @@ kotlin {
 
         jvmMain.dependencies {
             implementation(libs.ktor.client.cio)
-        }
-
-        jsMain.dependencies {
-            implementation(libs.wrappers.browser)
-            implementation(libs.ktor.client.js)
         }
 
         wasmJsMain.dependencies {
